@@ -1,0 +1,78 @@
+<svg width="900" height="1400" viewBox="0 0 900 1400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="450" y1="0" x2="450" y2="1400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#220A0C"/>
+      <stop offset=".36" stop-color="#4B1013"/>
+      <stop offset=".7" stop-color="#140707"/>
+      <stop offset="1" stop-color="#050505"/>
+    </linearGradient>
+    <radialGradient id="spot" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(450 292) rotate(90) scale(476 360)">
+      <stop stop-color="#D5AF56" stop-opacity=".34"/>
+      <stop offset=".48" stop-color="#3A0D10" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#050505" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="900" y2="1400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5DE93"/>
+      <stop offset=".3" stop-color="#B47A29"/>
+      <stop offset=".65" stop-color="#F0C76B"/>
+      <stop offset="1" stop-color="#7D4E19"/>
+    </linearGradient>
+    <filter id="grain" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="4" seed="17"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend mode="overlay" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  <rect width="900" height="1400" fill="url(#bg)"/>
+  <rect width="900" height="1400" fill="url(#spot)"/>
+  <rect width="900" height="1400" opacity=".18" filter="url(#grain)" fill="#DDBB78"/>
+
+  <g opacity=".42">
+    <path d="M0 208H900" stroke="url(#gold)" stroke-width="5"/>
+    <path d="M0 1192H900" stroke="url(#gold)" stroke-width="5"/>
+    <path d="M112 0V1400" stroke="url(#gold)" stroke-width="3"/>
+    <path d="M788 0V1400" stroke="url(#gold)" stroke-width="3"/>
+    <path d="M0 340L186 208L450 375L714 208L900 340" stroke="url(#gold)" stroke-width="3"/>
+    <path d="M0 1060L186 1192L450 1025L714 1192L900 1060" stroke="url(#gold)" stroke-width="3"/>
+  </g>
+
+  <g opacity=".96">
+    <path d="M180 668C180 438 298 274 450 274C602 274 720 438 720 668V1106H180V668Z" fill="#070707" stroke="url(#gold)" stroke-width="8"/>
+    <path d="M222 668C222 470 319 330 450 330C581 330 678 470 678 668V1062H222V668Z" fill="#121111" stroke="#8B5A1D" stroke-width="3"/>
+    <path d="M262 668C262 506 344 393 450 393C556 393 638 506 638 668V1016H262V668Z" fill="#201819" stroke="#D1A44D" stroke-opacity=".46" stroke-width="2"/>
+  </g>
+
+  <g opacity=".95">
+    <path d="M145 974L450 808L755 974V1283H145V974Z" fill="#130908" stroke="#B57A2A" stroke-width="5"/>
+    <path d="M145 974L450 1129L755 974" stroke="#D5AF56" stroke-width="5"/>
+    <path d="M145 1283L373 1088" stroke="#8B5A1D" stroke-width="4"/>
+    <path d="M755 1283L527 1088" stroke="#8B5A1D" stroke-width="4"/>
+    <circle cx="450" cy="1063" r="58" fill="#781318" stroke="#D5AF56" stroke-width="5"/>
+    <path d="M425 1063H475" stroke="#F5DE93" stroke-width="8" stroke-linecap="round"/>
+    <path d="M450 1038V1088" stroke="#F5DE93" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <g opacity=".88">
+    <path d="M341 706C371 650 407 619 450 612C493 620 529 650 559 706C521 690 486 682 450 682C414 682 379 690 341 706Z" fill="#D5AF56"/>
+    <path d="M332 732C408 711 489 710 568 732" stroke="#D5AF56" stroke-width="5" stroke-linecap="round"/>
+    <path d="M386 773H514" stroke="#D5AF56" stroke-width="5" stroke-linecap="round"/>
+    <path d="M405 810H495" stroke="#D5AF56" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <g opacity=".56">
+    <path d="M80 538H218L151 606L218 676H80L148 606L80 538Z" stroke="#D5AF56" stroke-width="5"/>
+    <path d="M820 538H682L749 606L682 676H820L752 606L820 538Z" stroke="#D5AF56" stroke-width="5"/>
+    <path d="M79 820H218L151 888L218 958H79L148 888L79 820Z" stroke="#D5AF56" stroke-width="5"/>
+    <path d="M821 820H682L749 888L682 958H821L752 888L821 820Z" stroke="#D5AF56" stroke-width="5"/>
+  </g>
+
+  <g opacity=".72">
+    <rect x="292" y="85" width="316" height="84" fill="#050505" stroke="#D5AF56" stroke-width="4"/>
+    <path d="M312 127H588" stroke="#D5AF56" stroke-width="3"/>
+    <path d="M450 85V169" stroke="#D5AF56" stroke-width="3"/>
+    <path d="M352 85L450 169L548 85" stroke="#D5AF56" stroke-width="3"/>
+  </g>
+
+  <rect x="42" y="46" width="816" height="1308" rx="0" stroke="#D5AF56" stroke-opacity=".56" stroke-width="5"/>
+  <rect x="70" y="74" width="760" height="1252" rx="0" stroke="#E9C874" stroke-opacity=".26" stroke-width="2"/>
+</svg>

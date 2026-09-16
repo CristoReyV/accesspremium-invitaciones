@@ -1,0 +1,188 @@
+# Reporte de Coincidencias de Capturas
+
+Se encontraron **122** coincidencias entre las capturas de Inspo y las réplicas extraídas.
+Hay **23** capturas sin coincidencia clara.
+Hay **32** réplicas sin captura detectada.
+
+## Coincidencias Listas para Mover
+- ✅ screencapture-lirioinvitaciones-baby-shower-1-2026-05-26-16_09_08.png -> baby-shower-1
+- ✅ screencapture-lirioinvitaciones-baby-shower-1-page-2-2026-05-26-16_09_19.png -> baby-shower-1
+- ✅ screencapture-lirioinvitaciones-baby-shower-2-2026-05-26-16_09_52.png -> baby-shower-2
+- ✅ screencapture-lirioinvitaciones-baby-shower-2-page-2-2026-05-26-16_10_04.png -> baby-shower-2
+- ✅ screencapture-lirioinvitaciones-baby-shower-3-2026-05-26-16_10_28.png -> baby-shower-3
+- ✅ screencapture-lirioinvitaciones-baby-shower-3-page-2-2026-05-26-16_10_40.png -> baby-shower-3
+- ✅ screencapture-lirioinvitaciones-baby-shower-snoopy-2026-05-26-16_11_10.png -> baby-shower-snoopy
+- ✅ screencapture-lirioinvitaciones-baby-shower-snoopy-page-2-2026-05-26-16_11_23.png -> baby-shower-snoopy
+- ✅ screencapture-lirioinvitaciones-dise-o-7-baby-shower-2026-05-26-16_11_47.png -> dise-o-7-baby-shower
+- ✅ screencapture-lirioinvitaciones-diseno-1-baby-shower-2026-05-26-12_12_28.png -> diseno-1-baby-shower
+- ✅ screencapture-lirioinvitaciones-diseno-1-baby-shower-page-2-2026-05-26-12_21_28.png -> diseno-1-baby-shower
+- ✅ screencapture-lirioinvitaciones-diseno-1-baby-shower-page-2-2026-05-26-16_05_28.png -> diseno-1-baby-shower
+- ✅ screencapture-lirioinvitaciones-redise-o-baby-shower-page-2-2026-05-26-16_08_40.png -> redise-o-baby-shower
+- ✅ screencapture-lirioinvitaciones-bautizo-1-2026-05-26-17_23_49.png -> bautizo-1
+- ✅ screencapture-lirioinvitaciones-bautizo-dise-o-1-2026-05-26-17_07_13.png -> bautizo-dise-o-1
+- ✅ screencapture-lirioinvitaciones-dise-no-2-nuevo-bautizo-2026-05-26-17_08_02.png -> dise-no-2-nuevo-bautizo
+- ✅ screencapture-lirioinvitaciones-dise-o-3-nuevo-bautizo-2026-05-26-17_08_45.png -> dise-o-3-nuevo-bautizo
+- ✅ screencapture-lirioinvitaciones-dise-o-3-nuevo-bautizo-page-2-2026-05-26-17_08_59.png -> dise-o-3-nuevo-bautizo
+- ✅ screencapture-lirioinvitaciones-dise-o-5-bautizo-2026-05-26-17_28_40.png -> dise-o-5-bautizo
+- ✅ screencapture-lirioinvitaciones-comunion-2026-05-26-16_38_36.png -> comunion
+- ✅ screencapture-lirioinvitaciones-comunion-24-2026-05-26-16_39_38.png -> comunion-24
+- ✅ screencapture-lirioinvitaciones-comunion-3-2026-05-26-16_39_06.png -> comunion-3
+- ✅ screencapture-lirioinvitaciones-comunion-diseno-5-2026-05-26-16_43_37.png -> comunion-diseno-5
+- ✅ screencapture-lirioinvitaciones-dise-o-1-comunion-2026-05-26-16_37_31.png -> dise-o-1-comunion
+- ✅ screencapture-lirioinvitaciones-dise-o-1-comunion-page-2-2026-05-26-16_37_46.png -> dise-o-1-comunion
+- ✅ screencapture-lirioinvitaciones-dise-o-6-primera-comunion-2026-05-26-16_52_32.png -> dise-o-6-primera-comunion
+- ✅ screencapture-lirioinvitaciones-mi-primera-comuni-n-2026-05-26-16_53_07.png -> mi-primera-comuni-n
+- ✅ screencapture-lirioinvitaciones-bridgerton-cumple-2026-05-26-11_15_55.png -> bridgerton-cumple
+- ✅ screencapture-lirioinvitaciones-cristina-2026-05-26-11_13_43.png -> cristina
+- ✅ screencapture-lirioinvitaciones-cumplea-os-1-cars-2026-05-26-11_11_24.png -> cumplea-os-1-cars
+- ✅ screencapture-lirioinvitaciones-cumplea-os-2-kpop-2026-05-26-11_11_54.png -> cumplea-os-2-kpop
+- ✅ screencapture-lirioinvitaciones-cumplea-os-hello-kitty-2026-05-26-11_12_30.png -> cumplea-os-hello-kitty
+- ✅ screencapture-lirioinvitaciones-dise-o-6-cumplea-os-2026-05-26-11_14_27.png -> dise-o-6-cumplea-os
+- ✅ screencapture-lirioinvitaciones-dise-o-7-nuevo-cumplea-os-7-2026-05-26-11_14_59.png -> dise-o-7-nuevo-cumplea-os-7
+- ✅ screencapture-lirioinvitaciones-redise-o-4-cumplea-os-2026-05-26-11_12_59.png -> redise-o-4-cumplea-os
+- ✅ screencapture-lirioinvitaciones-dise-o-4-mi-graduacion-2026-05-26-11_09_11.png -> dise-o-4-mi-graduacion
+- ✅ screencapture-lirioinvitaciones-dise-o-5-graduacion-2026-05-26-11_09_40.png -> dise-o-5-graduacion
+- ✅ screencapture-lirioinvitaciones-dise-o-5-graduacion-page-2-2026-05-26-11_09_58.png -> dise-o-5-graduacion
+- ✅ screencapture-lirioinvitaciones-graduaci-n-dise-o-2-page-2-2026-05-26-11_07_34.png -> graduaci-n-dise-o-2
+- ✅ screencapture-lirioinvitaciones-graduacion3-page-2-2026-05-26-11_08_35.png -> graduacion3
+- ✅ screencapture-lirioinvitaciones-redise-o-graduaci-n-page-2-2026-05-26-11_06_40.png -> redise-o-graduaci-n
+- ✅ screencapture-lirioinvitaciones-jubilacion-1-2026-05-26-17_30_32.png -> jubilacion-1
+- ✅ screencapture-lirioinvitaciones-jubilacion-1-page-2-2026-05-26-17_32_15.png -> jubilacion-1
+- ✅ screencapture-lirioinvitaciones-jubilacion-2-2026-05-26-17_33_07.png -> jubilacion-2
+- ✅ screencapture-lirioinvitaciones-jubilacion-1-2026-05-26-16_55_55.png -> jubilacion-1
+- ✅ screencapture-lirioinvitaciones-jubilacion-1-page-2-2026-05-26-16_56_26.png -> jubilacion-1
+- ✅ screencapture-lirioinvitaciones-jubilacion-2-2026-05-26-16_56_56.png -> jubilacion-2
+- ✅ screencapture-lirioinvitaciones-luctuoso-1-2026-05-26-16_58_19.png -> luctuoso-1
+- ✅ screencapture-lirioinvitaciones-dise-o-3-revelaci-n-2026-05-26-16_14_33.png -> dise-o-3-revelaci-n
+- ✅ screencapture-lirioinvitaciones-propuesta-revelaci-n-de-g-nero-2026-05-26-16_14_56.png -> propuesta-revelaci-n-de-g-nero
+- ✅ screencapture-lirioinvitaciones-redise-o-revelaci-n-de-genero-2026-05-26-16_13_28.png -> redise-o-revelaci-n-de-genero
+- ✅ screencapture-lirioinvitaciones-redise-o-revelaci-n-de-genero-page-2-2026-05-26-16_13_37.png -> redise-o-revelaci-n-de-genero
+- ✅ screencapture-lirioinvitaciones-revelaci-n-de-genero2-2026-05-26-16_13_58.png -> revelaci-n-de-genero2
+- ✅ screencapture-lirioinvitaciones-revelaci-n-de-genero2-page-2-2026-05-26-16_14_11.png -> revelaci-n-de-genero2
+- ✅ screencapture-lirioinvitaciones-revelacion-dise-o-5-2026-05-26-16_15_45.png -> revelacion-dise-o-5
+- ✅ screencapture-lirioinvitaciones-bella-y-bestia-redise-o-2026-05-26-10_29_55.png -> bella-y-bestia-redise-o
+- ✅ screencapture-lirioinvitaciones-daguwuzbom8-2026-05-26-10_43_25.png -> daguwuzbom8
+- ✅ screencapture-lirioinvitaciones-dise-o-15-mis-xv-2026-05-26-10_13_32.png -> dise-o-15-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-22-nuevo-xv-page-2-2026-05-26-10_30_34.png -> dise-o-22-nuevo-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-24-mis-xv-2026-05-26-10_44_00.png -> dise-o-24-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-25-nuevo-mis-xv-2026-05-26-10_33_13.png -> dise-o-25-nuevo-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-25-nuevo-mis-xv-2026-05-26-10_33_25.png -> dise-o-25-nuevo-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-25-nuevo-mis-xv-page-2-2026-05-26-10_33_35.png -> dise-o-25-nuevo-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-27-nuevo-mis-xv-2026-05-26-10_36_02.png -> dise-o-27-nuevo-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-27-nuevo-mis-xv-page-2-2026-05-26-10_36_25.png -> dise-o-27-nuevo-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-28-mis-xv-2026-05-26-10_37_21.png -> dise-o-28-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-28-mis-xv-page-2-2026-05-26-10_37_38.png -> dise-o-28-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-30-xv-a-os-2026-05-26-10_53_29.png -> dise-o-30-xv-a-os
+- ✅ screencapture-lirioinvitaciones-dise-o-43-xv-a-os-2026-05-26-10_48_43.png -> dise-o-43-xv-a-os
+- ✅ screencapture-lirioinvitaciones-dise-o-43-xv-a-os-page-2-2026-05-26-10_48_58.png -> dise-o-43-xv-a-os
+- ✅ screencapture-lirioinvitaciones-dise-o-5-mis-xv-2026-05-26-10_07_59.png -> dise-o-5-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-5-mis-xv-page-2-2026-05-26-10_08_07.png -> dise-o-5-mis-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-blancanieves-xv-2026-05-26-10_32_46.png -> dise-o-blancanieves-xv
+- ✅ screencapture-lirioinvitaciones-dise-o-xv-2-2026-05-26-10_02_53.png -> dise-o-xv-2
+- ✅ screencapture-lirioinvitaciones-diseno-14-xv-2026-05-26-10_18_12.png -> diseno-14-xv
+- ✅ screencapture-lirioinvitaciones-diseno-14-xv-page-2-2026-05-26-10_18_57.png -> diseno-14-xv
+- ✅ screencapture-lirioinvitaciones-diseno-16-xv-2026-05-26-10_26_26.png -> diseno-16-xv
+- ✅ screencapture-lirioinvitaciones-diseno-31-xv-2026-05-26-10_47_35.png -> diseno-31-xv
+- ✅ screencapture-lirioinvitaciones-diseno-31-xv-diseo-31-xv-2026-05-26-10_47_53.png -> diseno-31-xv
+- ✅ screencapture-lirioinvitaciones-diseno-34-mis-xv-2026-05-26-10_42_16.png -> diseno-34-mis-xv
+- ✅ screencapture-lirioinvitaciones-diseno-34-mis-xv-page-2-2026-05-26-10_42_31.png -> diseno-34-mis-xv
+- ✅ screencapture-lirioinvitaciones-diseno-37xv-2026-05-26-10_44_48.png -> diseno-37xv
+- ✅ screencapture-lirioinvitaciones-diseno-37xv-page-2-2026-05-26-10_44_59.png -> diseno-37xv
+- ✅ screencapture-lirioinvitaciones-diseno-4-xv-2026-05-26-10_46_03.png -> diseno-4-xv
+- ✅ screencapture-lirioinvitaciones-diseno-6-xv-2026-05-26-10_08_46.png -> diseno-6-xv
+- ✅ screencapture-lirioinvitaciones-diseno20xv-2026-05-26-10_28_36.png -> diseno20xv
+- ✅ screencapture-lirioinvitaciones-diseo-3-xv-a-os-2026-05-26-10_03_21.png -> diseo-3-xv-a-os
+- ✅ screencapture-lirioinvitaciones-diseo-3-xv-a-os-page-2-2026-05-26-10_03_49.png -> diseo-3-xv-a-os
+- ✅ screencapture-lirioinvitaciones-gatsby-xv-a-os-2026-05-26-10_47_10.png -> gatsby-xv-a-os
+- ✅ screencapture-lirioinvitaciones-la-princesa-y-el-sapo-xv-2026-05-26-10_24_42.png -> la-princesa-y-el-sapo-xv
+- ✅ screencapture-lirioinvitaciones-luciana-2026-05-26-10_11_34.png -> luciana
+- ✅ screencapture-lirioinvitaciones-nuevo-23-diseno-xv-2026-05-26-10_31_12.png -> nuevo-23-diseno-xv
+- ✅ screencapture-lirioinvitaciones-nuevo-23-diseno-xv-page-2-2026-05-26-10_31_31.png -> nuevo-23-diseno-xv
+- ✅ screencapture-lirioinvitaciones-paris-xv-a-os-2026-05-26-10_45_34.png -> paris-xv-a-os
+- ✅ screencapture-lirioinvitaciones-paulina-2026-05-26-10_12_56.png -> paulina
+- ✅ screencapture-lirioinvitaciones-re-diseno-16-xv-2026-05-26-10_21_21.png -> re-diseno-16-xv
+- ✅ screencapture-lirioinvitaciones-re-diseno-16-xv-page-2-2026-05-26-10_21_43.png -> re-diseno-16-xv
+- ✅ screencapture-lirioinvitaciones-re-diseno-alicia-2026-05-26-10_15_05.png -> re-diseno-alicia
+- ✅ screencapture-lirioinvitaciones-re-diseno-alicia-page-2-2026-05-26-10_15_39.png -> re-diseno-alicia
+- ✅ screencapture-lirioinvitaciones-redise-o-33-xv-a-os-2026-05-26-10_39_15.png -> redise-o-33-xv-a-os
+- ✅ screencapture-lirioinvitaciones-redise-o-7-xv-a-os-2026-05-26-10_09_23.png -> redise-o-7-xv-a-os
+- ✅ screencapture-lirioinvitaciones-redise-o-7-xv-a-os-page-2-2026-05-26-10_09_50.png -> redise-o-7-xv-a-os
+- ✅ screencapture-lirioinvitaciones-redise-o-8-xv-2026-05-26-10_10_29.png -> redise-o-8-xv
+- ✅ screencapture-lirioinvitaciones-redise-o-8-xv-page-2-2026-05-26-10_10_45.png -> redise-o-8-xv
+- ✅ screencapture-lirioinvitaciones-redise-o-de-cenicienta-2026-05-26-10_25_27.png -> redise-o-de-cenicienta
+- ✅ screencapture-lirioinvitaciones-redise-o-diseno-10-mis-xv-2026-05-26-10_12_10.png -> redise-o-diseno-10-mis-xv
+- ✅ screencapture-lirioinvitaciones-rediseno-12-xv-alicia-1-2026-05-26-10_20_07.png -> rediseno-12-xv-alicia-1
+- ✅ screencapture-lirioinvitaciones-rediseno-12-xv-alicia-1-page-2-2026-05-26-10_20_20.png -> rediseno-12-xv-alicia-1
+- ✅ screencapture-lirioinvitaciones-rediseno-xv4-2026-05-26-10_05_22.png -> rediseno-xv4
+- ✅ screencapture-lirioinvitaciones-rediseno-xv4-page-2-2026-05-26-10_05_36.png -> rediseno-xv4
+- ✅ screencapture-lirioinvitaciones-vintage-xv-a-os-2026-05-26-10_46_24.png -> vintage-xv-a-os
+- ✅ screencapture-lirioinvitaciones-vintage-xv-a-os-page-2-2026-05-26-10_46_36.png -> vintage-xv-a-os
+- ✅ screencapture-lirioinvitaciones-xv-c-2026-05-26-10_02_13.png -> xv-c
+- ✅ screencapture-lirioinvitaciones-xv-c-page-2-2026-05-26-10_02_23.png -> xv-c
+- ✅ screencapture-lirioinvitaciones-xv-hombre-1-2026-05-26-10_55_34.png -> xv-hombre-1
+- ✅ screencapture-lirioinvitaciones-xv-hombre-2-2026-05-26-10_56_34.png -> xv-hombre-2
+- ✅ screencapture-lirioinvitaciones-xv-hombre-3-2026-05-26-10_57_10.png -> xv-hombre-3
+- ✅ screencapture-lirioinvitaciones-xv-hombre-4-2026-05-26-10_57_57.png -> xv-hombre-4
+- ✅ screencapture-lirioinvitaciones-xv-hombre-5-2026-05-26-10_58_31.png -> xv-hombre-5
+- ✅ screencapture-lirioinvitaciones-xv-hombre-6-2026-05-26-10_59_20.png -> xv-hombre-6
+- ✅ screencapture-lirioinvitaciones-xv-hombre-7-2026-05-26-11_04_53.png -> xv-hombre-7
+- ✅ screencapture-lirioinvitaciones-xv-hombre-8-2026-05-26-11_05_17.png -> xv-hombre-8
+
+## Capturas Sin Coincidencia
+- ❌ boda1 (1)
+- ❌ boda1 (2)
+- ❌ boda10 (1)
+- ❌ boda10 (2)
+- ❌ boda11
+- ❌ boda12
+- ❌ boda13 (1)
+- ❌ boda13 (2)
+- ❌ boda14 (1)
+- ❌ boda14 (2)
+- ❌ boda15
+- ❌ boda16
+- ❌ boda2
+- ❌ boda3 (1)
+- ❌ boda3 (2)
+- ❌ boda4
+- ❌ boda5
+- ❌ boda6
+- ❌ boda7
+- ❌ boda8
+- ❌ boda9 (1)
+- ❌ boda9 (2)
+- ❌ screencapture-lirioinvitaciones-dise-o-26-xv-2026-05-26-10_34_44
+
+## Réplicas Sin Captura (Sobran URLs o nombres diferentes)
+- ⚠️ aniversario2
+- ⚠️ aniversario3
+- ⚠️ aniversario4
+- ⚠️ aniversario6
+- ⚠️ dise-o-5-nuevo-aniversario
+- ⚠️ dise-o-7-aniversario
+- ⚠️ dise-o-8-aniversario
+- ⚠️ dise-o-9-nuevo-aniversario
+- ⚠️ diseno-1-aniversario
+- ⚠️ diseno-3-aniversario
+- ⚠️ circo-cumplea-os
+- ⚠️ cumplea-os-13-nuevo
+- ⚠️ cumplea-os-26
+- ⚠️ cumplea-os-blanca-nieves
+- ⚠️ cumplea-os-hot-wheels
+- ⚠️ dinosaurios-cumplea-os
+- ⚠️ dise-o-11-nuevo-cumplea-os
+- ⚠️ dise-o-14-cumplea-os
+- ⚠️ dise-o-2-cumplea-os
+- ⚠️ dise-o-9-nuevo-cumplea-os-9
+- ⚠️ dise-o-cumplea-os-10
+- ⚠️ dise-o-nuevo-12-cumplea-os
+- ⚠️ diseno-20-cumplea-os
+- ⚠️ diseno-25-cumplea-os-plim-plim
+- ⚠️ diseno15-cumpl
+- ⚠️ frozen-cumplea-os
+- ⚠️ mal-fica-cumplea-os
+- ⚠️ spiderman-cumplea-os
+- ⚠️ dise-o-30-xv
+- ⚠️ dise-o-32-mis-xv
+- ⚠️ dise-o-bridgerton-xv-29
+- ⚠️ diseno31-xv

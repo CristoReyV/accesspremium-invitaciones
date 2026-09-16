@@ -1,0 +1,69 @@
+<svg width="900" height="1400" viewBox="0 0 900 1400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="450" y1="0" x2="450" y2="1400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1628"/>
+      <stop offset=".54" stop-color="#101E34"/>
+      <stop offset="1" stop-color="#05070B"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="900" y2="1400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5F7FA"/>
+      <stop offset=".28" stop-color="#8792A2"/>
+      <stop offset=".58" stop-color="#DDE4ED"/>
+      <stop offset="1" stop-color="#5F6B78"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(450 375) rotate(90) scale(410 340)">
+      <stop stop-color="#BFC8D6" stop-opacity=".22"/>
+      <stop offset=".55" stop-color="#1A2A4A" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#05070B" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".026" numOctaves="5" seed="33"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend mode="overlay" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  <rect width="900" height="1400" fill="url(#bg)"/>
+  <rect width="900" height="1400" fill="url(#glow)"/>
+  <rect width="900" height="1400" opacity=".25" filter="url(#grain)" fill="#AAB6C7"/>
+
+  <g opacity=".54">
+    <path d="M0 260H900" stroke="url(#silver)" stroke-width="2"/>
+    <path d="M0 1120H900" stroke="url(#silver)" stroke-width="2"/>
+    <path d="M178 0V1400" stroke="url(#silver)" stroke-width="2"/>
+    <path d="M722 0V1400" stroke="url(#silver)" stroke-width="2"/>
+    <circle cx="450" cy="256" r="114" stroke="url(#silver)" stroke-width="2"/>
+    <circle cx="450" cy="1122" r="114" stroke="url(#silver)" stroke-width="2"/>
+  </g>
+
+  <g opacity=".98">
+    <path d="M112 810L450 610L788 810V1230H112V810Z" fill="#101C31" stroke="url(#silver)" stroke-width="6"/>
+    <path d="M112 810L450 1030L788 810" stroke="#C8D0DA" stroke-width="5"/>
+    <path d="M112 1230L366 972" stroke="#657284" stroke-width="4"/>
+    <path d="M788 1230L534 972" stroke="#657284" stroke-width="4"/>
+    <path d="M214 654H686V976H214V654Z" fill="#F2F3F5" stroke="#B9C2CF" stroke-width="5"/>
+    <path d="M254 715H646" stroke="#A7B0BE" stroke-width="4"/>
+    <path d="M254 773H646" stroke="#A7B0BE" stroke-width="4"/>
+    <path d="M254 831H560" stroke="#A7B0BE" stroke-width="4"/>
+    <circle cx="450" cy="896" r="58" fill="#15243D" stroke="#DDE4ED" stroke-width="5"/>
+    <path d="M420 896H480" stroke="#DDE4ED" stroke-width="7" stroke-linecap="round"/>
+  </g>
+
+  <g opacity=".74">
+    <rect x="315" y="170" width="270" height="156" rx="22" fill="#111D31" stroke="url(#silver)" stroke-width="4"/>
+    <path d="M360 254H540" stroke="#C8D0DA" stroke-width="5" stroke-linecap="round"/>
+    <path d="M397 210H503" stroke="#66758A" stroke-width="4" stroke-linecap="round"/>
+    <path d="M397 298H503" stroke="#66758A" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <g opacity=".76">
+    <circle cx="184" cy="422" r="4" fill="#DDE4ED"/>
+    <circle cx="708" cy="458" r="3" fill="#DDE4ED"/>
+    <circle cx="126" cy="1035" r="3" fill="#DDE4ED"/>
+    <circle cx="778" cy="1048" r="4" fill="#DDE4ED"/>
+    <circle cx="292" cy="120" r="3" fill="#DDE4ED"/>
+    <circle cx="614" cy="118" r="4" fill="#DDE4ED"/>
+  </g>
+
+  <rect x="44" y="52" width="812" height="1296" stroke="url(#silver)" stroke-opacity=".64" stroke-width="4"/>
+  <rect x="72" y="80" width="756" height="1240" stroke="#C8D0DA" stroke-opacity=".22" stroke-width="2"/>
+</svg>

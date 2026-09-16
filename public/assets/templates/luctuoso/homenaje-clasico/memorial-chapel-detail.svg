@@ -1,0 +1,37 @@
+<svg width="900" height="1100" viewBox="0 0 900 1100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="450" y1="0" x2="450" y2="1100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDFCF8"/>
+      <stop offset=".62" stop-color="#F5EFE4"/>
+      <stop offset="1" stop-color="#E8DDCB"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="150" y1="0" x2="750" y2="1100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D8C486"/>
+      <stop offset=".36" stop-color="#947323"/>
+      <stop offset=".72" stop-color="#C3A653"/>
+      <stop offset="1" stop-color="#7D621F"/>
+    </linearGradient>
+    <filter id="grain" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".018" numOctaves="4" seed="91"/>
+      <feBlend mode="soft-light" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  <rect width="900" height="1100" fill="url(#bg)"/>
+  <rect width="900" height="1100" opacity=".24" filter="url(#grain)" fill="#DCD1BE"/>
+  <rect x="92" y="86" width="716" height="928" rx="38" fill="#FFFDF8" stroke="url(#gold)" stroke-width="5"/>
+  <path d="M200 856H700V946H200V856Z" fill="#EEE4D2" stroke="#A88B36" stroke-width="5"/>
+  <path d="M248 856V474L450 314L652 474V856H248Z" fill="#F8F3EA" stroke="#A88B36" stroke-width="6"/>
+  <path d="M450 248V428" stroke="#3B3733" stroke-width="12" stroke-linecap="round"/>
+  <path d="M382 316H518" stroke="#3B3733" stroke-width="12" stroke-linecap="round"/>
+  <path d="M300 512H408V856H300V512Z" fill="#2E2A25"/>
+  <path d="M492 512H600V856H492V512Z" fill="#2E2A25"/>
+  <path d="M398 856V668C398 602 502 602 502 668V856H398Z" fill="#3B3733"/>
+  <path d="M250 474H650" stroke="#C4AA58" stroke-width="5"/>
+  <path d="M212 914H688" stroke="#C4AA58" stroke-width="4"/>
+  <circle cx="354" cy="610" r="22" fill="#D8C486"/>
+  <circle cx="546" cy="610" r="22" fill="#D8C486"/>
+  <path d="M148 252C222 202 294 202 366 252C292 298 222 300 148 252Z" stroke="#B8AA79" stroke-width="4" fill="none" opacity=".66"/>
+  <path d="M752 252C678 202 606 202 534 252C608 298 678 300 752 252Z" stroke="#B8AA79" stroke-width="4" fill="none" opacity=".66"/>
+  <path d="M168 182C254 144 328 150 390 198" stroke="#B8AA79" stroke-width="4" stroke-linecap="round" opacity=".58"/>
+  <path d="M732 182C646 144 572 150 510 198" stroke="#B8AA79" stroke-width="4" stroke-linecap="round" opacity=".58"/>
+</svg>

@@ -1,0 +1,70 @@
+<svg width="900" height="1600" viewBox="0 0 900 1600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="paper" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed="17"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.18"/>
+      </feComponentTransfer>
+    </filter>
+    <linearGradient id="pinkWash" x1="0" x2="0" y1="0" y2="1">
+      <stop stop-color="#FFF0F6"/>
+      <stop offset="0.52" stop-color="#FFE7F1"/>
+      <stop offset="1" stop-color="#FFDCEB"/>
+    </linearGradient>
+    <linearGradient id="redInk" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#E33C2F"/>
+      <stop offset="1" stop-color="#C7202B"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="1600" fill="url(#pinkWash)"/>
+  <rect width="900" height="1600" filter="url(#paper)" opacity="0.72"/>
+  <path d="M0 1090c155-72 314-78 478-20 156 55 297 50 422-12v542H0v-510Z" fill="#FFE3EE" opacity="0.72"/>
+
+  <g stroke="url(#redInk)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.96">
+    <path d="M152 156C90 181 75 239 122 294c33 38 37 67 10 107-26 38-18 81 21 113"/>
+    <path d="M748 156c61 25 76 83 29 138-33 38-37 67-10 107 26 38 18 81-21 113"/>
+    <path d="M134 835c-44 41-50 96-18 148 22 35 20 69-5 105"/>
+    <path d="M766 835c44 41 50 96 18 148-22 35-20 69 5 105"/>
+    <path d="M238 145c76-78 154-76 203 2-72 35-141 33-203-2Z"/>
+    <path d="M662 145c-76-78-154-76-203 2 72 35 141 33 203-2Z"/>
+    <path d="M456 156c-19-19-49-20-69-2 17 31 49 37 69 2Z"/>
+    <path d="M456 156c19-19 49-20 69-2-17 31-49 37-69 2Z"/>
+    <path d="M450 160c-28 33-76 60-139 84M450 160c28 33 76 60 139 84"/>
+    <path d="M268 1048c81-73 160-68 209 13-72 38-143 34-209-13Z"/>
+    <path d="M632 1048c-81-73-160-68-209 13 72 38 143 34 209-13Z"/>
+    <path d="M451 1058c-21-21-51-23-72-5 17 34 51 41 72 5Z"/>
+    <path d="M451 1058c21-21 51-23 72-5-17 34-51 41-72 5Z"/>
+  </g>
+
+  <g transform="translate(0 250)" opacity="0.95">
+    <path d="M304 530c24-44 83-49 111-9 38-35 92-10 92 41 0 74-101 119-101 119S304 607 304 530Z" stroke="#E33C2F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M355 565c19 17 55 18 78-2" stroke="#FF7EA8" stroke-width="5" stroke-linecap="round"/>
+    <path d="M342 504c-12-33 5-65 39-73M439 506c9-43 41-63 84-55M424 449c24-26 56-29 85-10" stroke="#E33C2F" stroke-width="5" stroke-linecap="round"/>
+    <path d="M496 468c33 31 57 60 67 102" stroke="#E33C2F" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.94">
+    <circle cx="166" cy="639" r="22" fill="#D6212F"/>
+    <path d="M145 627c-25-25-47-17-51 8-6 36 51 64 51 64s57-28 51-64c-4-25-26-33-51-8Z" fill="#D6212F"/>
+    <circle cx="734" cy="639" r="22" fill="#D6212F"/>
+    <path d="M713 627c-25-25-47-17-51 8-6 36 51 64 51 64s57-28 51-64c-4-25-26-33-51-8Z" fill="#D6212F"/>
+  </g>
+
+  <g transform="translate(568 1170)" opacity="0.98">
+    <path d="M82 0c-47 32-71 80-73 143 64-14 103-51 116-111" stroke="#E33C2F" stroke-width="6" stroke-linecap="round"/>
+    <path d="M115 32c57 20 91 61 101 123-63 8-111-17-144-73" stroke="#E33C2F" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="62" cy="176" r="39" fill="#D6212F"/>
+    <circle cx="155" cy="179" r="39" fill="#D6212F"/>
+    <path d="M86 98c-12 43-18 75-18 88M124 94c19 45 29 76 29 94" stroke="#7C1C22" stroke-width="5" stroke-linecap="round" opacity="0.62"/>
+    <path d="M27 33c50-24 91-18 124 18" stroke="#E33C2F" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(118 1190) rotate(-7)" opacity="0.96">
+    <rect width="260" height="300" fill="#FF9FC3"/>
+    <rect x="28" y="28" width="204" height="204" fill="#FFF7FB"/>
+    <path d="M62 253c47-19 93-18 139 3" stroke="#E33C2F" stroke-width="6" stroke-linecap="round"/>
+    <path d="M60 262c58 16 113 15 166-4" stroke="#FF6AA2" stroke-width="5" stroke-linecap="round"/>
+    <path d="M36 18c42-36 84-33 126 9-39 28-81 25-126-9Z" stroke="#E33C2F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

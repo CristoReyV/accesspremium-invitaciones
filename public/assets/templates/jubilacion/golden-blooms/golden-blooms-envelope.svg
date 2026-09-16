@@ -1,0 +1,40 @@
+<svg width="900" height="900" viewBox="0 0 900 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="linen" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="41"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.2"/>
+      </feComponentTransfer>
+    </filter>
+    <linearGradient id="paper" x1="0" x2="0" y1="0" y2="1">
+      <stop stop-color="#FFF8F3"/>
+      <stop offset="1" stop-color="#F3DFE2"/>
+    </linearGradient>
+    <radialGradient id="wax" cx="50%" cy="45%" r="62%">
+      <stop stop-color="#F6C5CA"/>
+      <stop offset="1" stop-color="#B98288"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="900" fill="#FFFDF8"/>
+  <rect width="900" height="900" filter="url(#linen)" opacity="0.65"/>
+  <g transform="translate(135 210)">
+    <rect width="630" height="390" rx="16" fill="url(#paper)" filter="url(#linen)"/>
+    <path d="M0 0 315 235 630 0" stroke="#CBA8AA" stroke-width="5" opacity="0.45"/>
+    <path d="M0 390 254 166M630 390 376 166" stroke="#CBA8AA" stroke-width="5" opacity="0.45"/>
+    <path d="M0 0h630v390H0z" stroke="#D6B7B9" stroke-width="3" opacity="0.5"/>
+    <circle cx="315" cy="202" r="58" fill="url(#wax)"/>
+    <path d="M283 200c18-23 46-25 68-3M274 224c39 20 78 20 117-1" stroke="#A77478" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+  </g>
+  <g transform="translate(84 82)" opacity="0.75">
+    <path d="M60 74c43-54 100-60 169-20-33 74-92 91-169 20Z" fill="#F2B6C4"/>
+    <path d="M48 138c67-42 132-38 193 12-61 67-126 63-193-12Z" fill="#F8DCE4"/>
+    <circle cx="148" cy="92" r="15" fill="#B8923E"/>
+    <path d="M209 55c53 2 91 27 113 76-56 15-99-10-113-76Z" fill="#7F916F"/>
+  </g>
+  <g transform="translate(625 613) rotate(16)" opacity="0.75">
+    <path d="M60 74c43-54 100-60 169-20-33 74-92 91-169 20Z" fill="#F2B6C4"/>
+    <path d="M48 138c67-42 132-38 193 12-61 67-126 63-193-12Z" fill="#F8DCE4"/>
+    <circle cx="148" cy="92" r="15" fill="#B8923E"/>
+  </g>
+</svg>

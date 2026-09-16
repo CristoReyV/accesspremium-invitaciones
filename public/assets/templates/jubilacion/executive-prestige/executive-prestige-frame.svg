@@ -1,0 +1,74 @@
+<svg width="900" height="1400" viewBox="0 0 900 1400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="450" y1="0" x2="450" y2="1400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A1324"/>
+      <stop offset=".38" stop-color="#172A49"/>
+      <stop offset=".74" stop-color="#0A101D"/>
+      <stop offset="1" stop-color="#05070B"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="114" y1="0" x2="786" y2="1400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset=".22" stop-color="#8490A2"/>
+      <stop offset=".5" stop-color="#DDE4ED"/>
+      <stop offset=".72" stop-color="#657284"/>
+      <stop offset="1" stop-color="#F2F4F8"/>
+    </linearGradient>
+    <radialGradient id="stage" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(450 310) rotate(90) scale(420 360)">
+      <stop stop-color="#DDE4ED" stop-opacity=".26"/>
+      <stop offset=".45" stop-color="#172A49" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#05070B" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".024" numOctaves="4" seed="29"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend mode="soft-light" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  <rect width="900" height="1400" fill="url(#bg)"/>
+  <rect width="900" height="1400" fill="url(#stage)"/>
+  <rect width="900" height="1400" opacity=".26" filter="url(#grain)" fill="#A8B5C6"/>
+
+  <g opacity=".5">
+    <path d="M0 208H900" stroke="url(#silver)" stroke-width="2"/>
+    <path d="M0 1194H900" stroke="url(#silver)" stroke-width="2"/>
+    <path d="M120 0V1400" stroke="url(#silver)" stroke-width="2"/>
+    <path d="M780 0V1400" stroke="url(#silver)" stroke-width="2"/>
+    <path d="M0 420L450 196L900 420" stroke="url(#silver)" stroke-width="2"/>
+    <path d="M0 990L450 1214L900 990" stroke="url(#silver)" stroke-width="2"/>
+  </g>
+
+  <g opacity=".96">
+    <rect x="186" y="212" width="528" height="746" rx="32" fill="#0E1A2C" stroke="url(#silver)" stroke-width="6"/>
+    <rect x="228" y="256" width="444" height="658" rx="26" fill="#13233C" stroke="#AAB6C7" stroke-opacity=".55" stroke-width="3"/>
+    <circle cx="450" cy="404" r="118" fill="#0A1324" stroke="url(#silver)" stroke-width="6"/>
+    <path d="M360 571H540" stroke="#C8D0DA" stroke-width="7" stroke-linecap="round"/>
+    <path d="M306 643H594" stroke="#7F8EA2" stroke-width="5" stroke-linecap="round"/>
+    <path d="M306 703H594" stroke="#7F8EA2" stroke-width="5" stroke-linecap="round"/>
+    <path d="M306 763H540" stroke="#7F8EA2" stroke-width="5" stroke-linecap="round"/>
+    <path d="M370 364C402 330 500 330 532 364" stroke="#C8D0DA" stroke-width="8" stroke-linecap="round"/>
+    <path d="M342 448C384 500 518 500 560 448" stroke="#C8D0DA" stroke-width="8" stroke-linecap="round"/>
+    <path d="M372 430H528" stroke="#64748B" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <g opacity=".9">
+    <rect x="130" y="1012" width="640" height="170" rx="26" fill="#101C31" stroke="url(#silver)" stroke-width="4"/>
+    <circle cx="222" cy="1096" r="34" fill="#DDE4ED"/>
+    <path d="M300 1056H676" stroke="#AAB6C7" stroke-width="5" stroke-linecap="round"/>
+    <path d="M300 1100H620" stroke="#738198" stroke-width="4" stroke-linecap="round"/>
+    <path d="M300 1138H560" stroke="#738198" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <g opacity=".72">
+    <circle cx="176" cy="334" r="4" fill="#DDE4ED"/>
+    <circle cx="734" cy="350" r="4" fill="#DDE4ED"/>
+    <circle cx="168" cy="900" r="3" fill="#DDE4ED"/>
+    <circle cx="740" cy="908" r="4" fill="#DDE4ED"/>
+    <circle cx="288" cy="112" r="3" fill="#DDE4ED"/>
+    <circle cx="618" cy="120" r="4" fill="#DDE4ED"/>
+    <path d="M80 610H170" stroke="#DDE4ED" stroke-opacity=".44" stroke-width="4"/>
+    <path d="M730 610H820" stroke="#DDE4ED" stroke-opacity=".44" stroke-width="4"/>
+  </g>
+
+  <rect x="42" y="50" width="816" height="1300" stroke="url(#silver)" stroke-opacity=".6" stroke-width="4"/>
+  <rect x="72" y="80" width="756" height="1240" stroke="#DDE4ED" stroke-opacity=".22" stroke-width="2"/>
+</svg>

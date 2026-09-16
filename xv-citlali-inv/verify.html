@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verificador de Links • XV Citlali</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#222;--mut:#6b6b6b;--gold:#cbbd93;--ok:#1b8f46;--bad:#b00020}
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#faf8f4;color:var(--ink)}
+  header{padding:16px 20px;border-bottom:1px solid #e8e2d6;background:#fff;position:sticky;top:0;z-index:10}
+  h1{font-size:18px;margin:0}
+  .cfg{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center}
+  input{padding:8px;border:1px solid #ddd;border-radius:6px;min-width:320px}
+  button{background:var(--gold);border:0;color:#fff;padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer}
+  main{padding:18px}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #eee;border-radius:10px;overflow:hidden}
+  th,td{padding:10px;border-bottom:1px solid #f1ece2;font-size:13px;vertical-align:top}
+  th{background:#faf6ee;text-align:left}
+  tr.ok td{background:#eaf8f0}
+  tr.err td{background:#fde8ec}
+  code{background:#f1efe9;padding:2px 6px;border-radius:6px}
+  .progress{margin:12px 0;color:#555}
+  iframe{width:360px;height:1200px;border:1px solid #eee;border-radius:8px}
+  .if-wrap{display:none;gap:12px;flex-wrap:wrap} /* pon 'flex' si deseas ver los iframes */
+</style>
+</head>
+<body>
+  <header>
+    <h1>Verificador de Links Personalizados</h1>
+    <div class="cfg">
+      <label>Base URL: <input id="site" value="" placeholder="https://citlali-xv.netlify.app"></label>
+      <label>Ruta JSON: <input id="json" value="assets/invitados.json"></label>
+      <button id="run">Verificar</button>
+      <button id="dl" style="display:none">Descargar reporte CSV</button>
+    </div>
+    <div class="progress" id="prog"></div>
+  </header>
+  <main>
+    <div class="if-wrap" id="ifwrap"></div>
+    <div id="table-wrap"></div>
+  </main>
+
+<script>
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const normalize = s => String(s||'').trim().toLowerCase();
+function toTitleCaseEs(str){ return String(str).toLowerCase().replace(/\b([a-záéíóúüñ])/gi,(m)=>m.toUpperCase()); }
+function csvFromRows(rows){
+  const cols = Object.keys(rows[0]||{});
+  const esc = v => `"${String(v??'').replace(/"/g,'""')}"`;
+  return cols.join(',')+'\n'+rows.map(r=>cols.map(c=>esc(r[c])).join(',')).join('\n');
+}
+
+async function verifyAll({site,jsonPath,concurrency=4}){
+  const report = [];
+  const base = (site||location.origin).replace(/\/$/,'');
+  const data = await fetch(jsonPath+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.json());
+  const entries = Object.entries(data).map(([code, v]) => ({code, nombre: v.nombre, pases: Number(v.pases)||1}));
+
+  const tw = document.getElementById('table-wrap');
+  tw.innerHTML = `<table><thead><tr>
+    <th>#</th><th>Código</th><th>Esperado</th><th>Leído</th><th>Link</th><th>Estado</th>
+  </tr></thead><tbody id="tbody"></tbody></table>`;
+  const tbody = document.getElementById('tbody');
+  const prog = document.getElementById('prog');
+  const ifwrap = document.getElementById('ifwrap');
+
+  let done = 0;
+  const total = entries.length;
+  const queue = entries.slice();
+
+  async function worker(){
+    while(queue.length){
+      const item = queue.shift();
+      const expectedName = toTitleCaseEs(item.nombre||'');
+      const expectedPases = item.pases > 0 ? item.pases : 1;
+      const url = `${base}/?i=${encodeURIComponent(item.code)}&autoopen=1&mute=1`;
+
+      const ifr = document.createElement('iframe');
+      ifr.src = url;
+      ifr.loading = 'eager';
+      ifr.decoding = 'async';
+      ifwrap.appendChild(ifr);
+
+      let got = {line1:'', line2:''};
+      try{
+        await new Promise((res, rej)=>{
+          const to = setTimeout(()=>rej(new Error('timeout')), 15000);
+          ifr.onload = ()=>{ clearTimeout(to); res(); };
+        });
+        await sleep(1200); // abre sobre y personaliza
+        const doc = ifr.contentWindow.document;
+        const card = doc.getElementById('passCard');
+        if(card && getComputedStyle(card).display!=='none'){
+          got.line1 = (card.querySelector('.line1')?.textContent||'').trim();
+          got.line2 = (card.querySelector('.line2')?.textContent||'').trim();
+        }
+      }catch(e){}
+
+      const expectedLine1 = `Pase para ${expectedPases===1?'1 persona':expectedPases+' personas'}`;
+      const okLine1 = normalize(got.line1) === normalize(expectedLine1);
+      const okName  = normalize(got.line2) === normalize(expectedName);
+      const ok = okLine1 && okName;
+
+      const tr = document.createElement('tr');
+      tr.className = ok ? 'ok' : 'err';
+      tr.innerHTML = `
+        <td>${done+1}</td>
+        <td><code>${item.code}</code></td>
+        <td><div>${expectedLine1}</div><div>${expectedName}</div></td>
+        <td><div>${got.line1||'<i>(vacío)</i>'}</div><div>${got.line2||'<i>(vacío)</i>'}</div></td>
+        <td><a href="${url}" target="_blank">Abrir</a></td>
+        <td>${ ok ? 'OK' :
+            (!got.line1 && !got.line2 ? 'No se encontró tarjeta de pase' :
+            `Pase: ${okLine1?'OK':'X'} · Nombre: ${okName?'OK':'X'}`) }
+        </td>`;
+      document.getElementById('tbody').appendChild(tr);
+
+      report.push({
+        codigo: item.code,
+        esperado_pase: expectedLine1,
+        esperado_nombre: expectedName,
+        leido_pase: got.line1,
+        leido_nombre: got.line2,
+        url
+      });
+
+      done++;
+      prog.textContent = `Verificados ${done} / ${total}…`;
+      ifwrap.removeChild(ifr);
+      await sleep(80);
+    }
+  }
+
+  await Promise.all(Array.from({length: Math.min(concurrency, entries.length)}, worker));
+  prog.textContent = `Listo: ${done} de ${total} verificados.`;
+
+  const dl = document.getElementById('dl');
+  dl.style.display = 'inline-block';
+  const csv = csvFromRows(report);
+  dl.onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    a.download = 'reporte_verificacion_links.csv';
+    a.click();
+  };
+}
+
+document.getElementById('run').addEventListener('click', ()=>{
+  const site = (document.getElementById('site').value || location.origin).trim();
+  document.getElementById('site').value = site || location.origin;
+  const json = document.getElementById('json').value.trim() || 'assets/invitados.json';
+  verifyAll({site, jsonPath: json, concurrency: 4});
+});
+
+// Autocompleta base URL si se abre en tu dominio
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(!document.getElementById('site').value) document.getElementById('site').value = location.origin;
+});
+</script>
+</body>
+</html>

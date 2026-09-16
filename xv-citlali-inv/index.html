@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>XV • Citlali Abigail • 13-sep-2025</title>
+
+<!-- Fuentes -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Stack con respaldo para Ñ -->
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Dancing+Script:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/hero.jpg" fetchpriority="high">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+
+<style>
+:root{
+  --gold:#cbbd93; --cream:#fbf7f2; --ink:#2b2420; --muted:#7d756f;
+  --rose:#d9a2b0;
+  --hero-bottom: clamp(8vh, 10vh + 1vw, 18vh);
+  --script: "Great Vibes","Dancing Script","Playfair Display",serif;
+}
+
+/* Base */
+*,*:before,*:after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Playfair Display",serif;background:var(--cream);color:var(--ink);
+  background-image:
+    radial-gradient(1200px 600px at -10% 110%, rgba(203,189,147,.20), transparent 60%),
+    radial-gradient(900px 500px at 110% -10%, rgba(203,189,147,.15), transparent 55%);
+}
+.no-scroll{overflow:hidden;height:100vh}
+
+/* Render diferido */
+section{content-visibility:auto;contain-intrinsic-size:800px}
+
+/* Música */
+.music-btn{
+  position:fixed;right:14px;top:14px;z-index:11000;
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--gold);border:none;cursor:pointer;
+  box-shadow:0 6px 16px rgba(0,0,0,.18);
+  opacity:0;pointer-events:none;transition:opacity .3s ease;
+}
+.music-btn.show{opacity:1;pointer-events:auto}
+.music-btn svg{width:20px;height:20px;fill:#fff;display:block}
+
+/* Splash / Sobre */
+.splash{position:fixed;inset:0;background:var(--cream);display:flex;justify-content:center;align-items:center;z-index:9999;perspective:1200px}
+.splash::after{content:"";position:absolute;inset:0;background:radial-gradient(transparent 40%, rgba(0,0,0,.07))}
+.splash img{
+  height:min(78vh, 92vw); width:auto; display:block;
+  box-shadow:0 18px 48px rgba(0,0,0,.22); border-radius:8px;
+  transform-origin:center;
+}
+@keyframes hintPulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.05)}}
+.splash .hint{position:absolute;bottom:6vh;left:50%;transform:translateX(-50%);font-size:1rem;color:var(--muted);background:rgba(255,255,255,.8);padding:.45rem 1rem;border-radius:20px;backdrop-filter:blur(3px);animation:hintPulse 2.4s infinite}
+.splash.open{pointer-events:none}
+@keyframes envelopeOpen{0%{transform:rotateX(0) scale(1);opacity:1}40%{transform:rotateX(22deg) scale(1.04)}70%{transform:rotateX(70deg) scale(.92)}100%{transform:rotateX(85deg) scale(.9);opacity:0}}
+.splash.open img{animation:envelopeOpen 1.1s ease-in-out forwards}
+
+/* Portada */
+header.hero{
+  min-height:100vh; position:relative; overflow:hidden; color:#fff; text-align:center;
+  background:url("assets/hero.jpg") center/cover no-repeat;
+}
+.hero-shade{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.52) 60%, rgba(0,0,0,.68) 100%)}
+.hero-content{
+  position:absolute; left:0; right:0; margin-inline:auto; bottom: var(--hero-bottom);
+  width:min(92vw,700px); padding:0 1rem; display:flex; flex-direction:column; align-items:center; gap:.35rem; z-index:2;
+}
+.hero-kicker{letter-spacing:.2em;font-size:clamp(.8rem,.9rem,1rem);opacity:.95}
+.hero-name{font-family:var(--script);font-size:clamp(2.6rem,6.2vw,5rem);line-height:1;text-wrap:balance}
+.hero-date{letter-spacing:.15em;font-size:clamp(.85rem,.95rem,1.05rem);text-transform:uppercase;opacity:.95}
+.hero-scroll{display:flex;flex-direction:column;align-items:center;margin-top:.9rem;text-decoration:none;color:#fff;opacity:.95}
+.hero-scroll .circle{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.8px solid rgba(255,255,255,.95);position:relative}
+.hero-scroll .circle svg{position:absolute;left:50%;transform:translateX(-50%);width:12px;height:12px;fill:#fff}
+.hero-scroll .circle svg:first-child{top:9px;animation:arrowDown 1.2s infinite}
+.hero-scroll .circle svg:last-child{top:18px;opacity:.85;animation:arrowDown 1.2s .15s infinite}
+.hero-scroll .label{margin-top:.35rem;font-size:.72rem;letter-spacing:.25em}
+@keyframes arrowDown{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,4px)}}
+
+/* Recuadro bajo la foto */
+.intro-slab{margin-top:-32px;background:var(--gold);color:#fff;text-align:center;padding:2.2rem 1.2rem 1.8rem;box-shadow:0 -8px 24px rgba(0,0,0,.1)}
+.intro-slab p{max-width:780px;margin:0 auto 1rem;line-height:1.6}
+
+/* Bendición / Padres / Padrinos */
+.blessing-wrap{padding:2rem 1rem 0}
+.blessing-card{max-width:780px;margin:0 auto;background:#f9f5ef;border:1px solid var(--gold);border-radius:6px;padding:clamp(1.2rem,3.8vw,2.2rem);box-shadow:0 6px 20px rgba(0,0,0,.06)}
+.blessing-lead{font-family:var(--script);font-size:clamp(1.5rem,5.6vw,2.2rem);line-height:1.35;color:#a08462;margin:.2rem 0 1.2rem}
+.blessing-section{margin:1.1rem 0 .6rem}
+.blessing-section .title{font-family:var(--script);font-size:clamp(1.6rem,5.8vw,2.3rem);color:#a08462;margin-bottom:.3rem}
+.names{font-size:clamp(.92rem,2.6vw,1.05rem);line-height:1.65}
+
+/* Cuenta regresiva */
+.count-hero{
+  position:relative; min-height:65vh; padding:0; margin-top:2rem;
+  display:flex; align-items:center; justify-content:center; text-align:center; color:#fff;
+}
+.count-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.65) 100%)}
+.count-inner{position:relative;z-index:1;padding:2rem 1rem;max-width:1000px;width:100%}
+.count-top,.count-bottom{font-family:var(--script);font-size:clamp(1.6rem,4.6vw,2.4rem)}
+.count-top{margin-bottom:.6rem}
+.count-bottom{margin-top:.6rem}
+#countdown{display:flex;justify-content:center;gap:clamp(10px,5vw,40px)}
+.count-hero .cd-box{background:transparent;border:none;min-width:auto;padding:0 .3rem}
+.count-hero .cd-num{font-size:clamp(1.8rem,7vw,3.2rem);color:#fff}
+.count-hero .cd-label{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;opacity:.9}
+
+/* Secciones */
+section{padding:clamp(3.5rem,5vw,4.5rem) 1rem;max-width:900px;margin:auto;text-align:center}
+.divider{width:120px;height:1px;background:var(--gold);margin:3rem auto 2.5rem;position:relative}
+.divider:before,.divider:after{content:"";position:absolute;top:-5px;width:14px;height:14px;border:1px solid var(--gold);border-radius:50%;background:var(--cream)}
+.divider:before{left:-24px}.divider:after{right:-24px}
+
+/* Títulos dorados */
+.section-title,.where-title,.where-title2,.dress-title{color:var(--gold);text-transform:capitalize}
+.section-title{font-size:clamp(1.6rem,2.4vw,2rem);margin-bottom:1rem}
+
+/* Dónde y Cuándo */
+.where{padding-top:2rem}
+.where-title{font-family:var(--script);font-size:clamp(2rem,6vw,2.6rem);margin-bottom:1.4rem}
+.where-grid{display:grid;gap:clamp(18px,2.4vw,24px)}
+.where-card{background:#fff;border:1px solid var(--gold);border-radius:8px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.08);text-align:left;max-width:760px;margin:0 auto}
+.where-card img{display:block;width:100%;height:clamp(180px,35vw,280px);object-fit:cover}
+.where-body{padding:1.3rem}
+.where-title2{font-family:var(--script);font-size:clamp(1.6rem,5.6vw,2.2rem);margin:.2rem 0 1rem}
+.where-body p{margin:.25rem 0}
+.map-btn{display:inline-block;margin-top:1rem;background:var(--gold);color:#fff;padding:.55rem 1.2rem;border-radius:6px;letter-spacing:.15em;text-decoration:none;font-size:.8rem}
+
+/* Vestimenta */
+.dress{padding-top:1rem}
+.dress-card{max-width:780px;margin:0 auto;background:#fff;border:1px solid var(--gold);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.08);padding:1.4rem}
+.dress-title{font-family:var(--script);font-size:clamp(1.8rem,6vw,2.4rem);margin-bottom:.4rem}
+.dress-code{display:inline-block;background:#f5efe6;border:1px dashed var(--gold);border-radius:8px;padding:.5rem .9rem;margin:.5rem 0 .8rem;font-weight:700;letter-spacing:.02em}
+.dress-note{font-size:.95rem;line-height:1.6}
+.swatches{display:inline-flex;gap:.5rem;align-items:center;margin-left:.3rem;vertical-align:middle}
+.swatch{width:14px;height:14px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+.swatch.rose{background:var(--rose)}
+.swatch.gold{background:var(--gold)}
+.dress-icon{
+  width:56px;height:56px;margin:.5rem auto 0;display:block;
+  background:var(--gold);
+  -webkit-mask:url('assets/formal-icon.png') center/contain no-repeat;
+          mask:url('assets/formal-icon.png') center/contain no-repeat;
+  opacity:.95;
+}
+.dress-icon-img{display:none;margin:.5rem auto 0;width:56px;height:auto}
+@supports not (mask: url("")) {
+  .dress-icon{display:none}
+  .dress-icon-img{display:block;filter:sepia(1) saturate(4) hue-rotate(330deg) brightness(.9)}
+}
+
+/* Timeline */
+.tl-list{
+  position:relative; margin:4rem auto 0; list-style:none;
+  --rail-x: clamp(30px, 9.5vw, 72px);
+  --dot:    clamp(32px, 7vw, 64px);
+  --line-w: clamp(2px, .7vw, 4px);
+  --gap-text: clamp(16px, 5.2vw, 40px);
+  --icon:   clamp(110px, 36vw, 180px);
+  --line-progress: 0;
+  padding-left:0;
+}
+.tl-list::before,.tl-list::after{
+  content:""; position:absolute; top:0; height:100%;
+  left: calc(var(--rail-x) - var(--line-w)/2); width: var(--line-w);
+  border-radius:2px; z-index:0;
+}
+.tl-list::before{background:#e9e4dc}
+.tl-list::after{background:var(--gold);height:calc(var(--line-progress) * 100%);transition:height .35s ease-out}
+.tl-item{position:relative;padding-left: calc(var(--rail-x) + var(--dot)/2 + var(--gap-text));margin-bottom: clamp(2.8rem, 7vw, 4.4rem);z-index:1;text-align:left}
+.tl-item .tl-time,.tl-item .tl-title,.tl-item .tl-icon{opacity:.28;transition:opacity .25s, transform .2s}
+.tl-item::before{content:"";position:absolute;top:-.2rem;left: calc(var(--rail-x) - var(--dot)/2);width:var(--dot);height:var(--dot);border-radius:50%;background:var(--gold);box-shadow:0 4px 10px rgba(0,0,0,.08);transform:scale(.9);transition:transform .2s ease, filter .2s ease}
+.tl-item::after{content:"\2665";position:absolute;top:-.2rem;left: calc(var(--rail-x) - var(--dot)/2);width:var(--dot);height:var(--dot);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#111;font-size:clamp(.9rem,2.6vw,1.1rem);pointer-events:none;opacity:.25;transition:opacity .2s ease, transform .2s ease}
+.tl-item.active::before{transform:scale(1.12);filter:brightness(1.05)}
+.tl-item.active::after{opacity:1;transform:scale(1.12)}
+.tl-item.active .tl-time,.tl-item.active .tl-title,.tl-item.active .tl-icon{opacity:1}
+.tl-time{font-size:clamp(.9rem, 2.6vw, 1.1rem);font-weight:700;letter-spacing:.05em}
+.tl-title{display:block;font-family:var(--script);font-size:clamp(1.8rem, 7vw, 2.6rem);line-height:1.1;margin:.35rem 0 1.1rem;color:var(--ink)}
+.tl-icon img{width:var(--icon);height:var(--icon);object-fit:contain;filter:drop-shadow(0 8px 10px rgba(0,0,0,.06))}
+
+/* Galería / Botón */
+.swiper{width:100%;padding-bottom:3rem}
+.swiper-slide{border-radius:14px;overflow:hidden;box-shadow:0 6px 14px rgba(0,0,0,.08)}
+.swiper-slide img{width:100%;height:100%;object-fit:cover}
+.btn{display:inline-block;background:var(--gold);color:#fff;padding:.9rem 2.8rem;border-radius:40px;font-weight:700;text-decoration:none;box-shadow:0 6px 16px rgba(203,189,147,.45);letter-spacing:.04em;text-transform:uppercase;transition:transform .2s ease, box-shadow .2s ease;animation:pulse 2.6s infinite}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(203,189,147,.5)}
+
+/* Pase personalizado */
+.pass-card{
+  display:none; max-width:680px; margin:0 auto 1.2rem;
+  background:#fff; border:1px solid var(--gold);
+  border-radius:12px; padding:1rem 1.2rem;
+  box-shadow:0 6px 18px rgba(0,0,0,.08);
+  text-align:center;
+}
+.pass-card .line1{font-weight:700; letter-spacing:.03em; font-size:1.05rem}
+.pass-card .line2{margin-top:.25rem; font-family:var(--script); font-size:2rem; color:var(--gold); text-transform:none}
+</style>
+</head>
+<body class="no-scroll">
+
+<!-- Botón de música -->
+<button id="musicBtn" class="music-btn" aria-label="Música">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19a3 3 0 1 1-2-2.83V6a1 1 0 0 1 .8-.98l9-2A1 1 0 0 1 18 4v9.17A3.001 3.001 0 1 1 16 16V6.89l-6 1.33V19z"/></svg>
+</button>
+
+<!-- Splash / Sobre -->
+<div class="splash" id="splash" role="dialog" aria-label="Abrir invitación">
+  <img src="assets/sobre.png" alt="Sobre con sello 'Abrir'">
+  <div class="hint">Toca para abrir</div>
+</div>
+
+<!-- Portada -->
+<header class="hero" id="inicio">
+  <div class="hero-shade" aria-hidden="true"></div>
+  <div class="hero-content" data-aos="zoom-in">
+    <div class="hero-kicker">MIS XV AÑOS</div>
+    <div class="hero-name">Citlali Abigail</div>
+    <div class="hero-date">13 septiembre 2025</div>
+    <a class="hero-scroll" href="#intro" aria-label="Desliza">
+      <span class="circle">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 10.5 3.5 6h1.8L8 8.7 10.7 6h1.8z"/></svg>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 10.5 3.5 6h1.8L8 8.7 10.7 6h1.8z"/></svg>
+      </span>
+      <span class="label">DESLIZA</span>
+    </a>
+  </div>
+</header>
+
+<!-- Recuadro bajo la foto -->
+<section id="intro" class="intro-slab">
+  <p>Te invito a celebrar el inicio de una nueva etapa en mi vida, llena de sueños, metas y grandes logros.</p>
+  <div class="heart">❤</div>
+</section>
+
+<!-- Bendición / Padres / Padrinos -->
+<section class="blessing-wrap">
+  <div class="blessing-card" data-aos="fade-up">
+    <p class="blessing-lead">Con la bendición de Dios<br>y en compañía de mis padres<br>y padrinos</p>
+    <div class="blessing-section">
+      <div class="title">Mis Padres</div>
+      <p class="names">Abraham Varela Orozco<br>Susana Hernandez Manzanarez</p>
+    </div>
+    <div class="blessing-section">
+      <div class="title">Mis Padrinos</div>
+      <p class="names">Ivan Osvaldo Herrera Orozco<br>Ana Gabriela Pérez Orozco</p>
+    </div>
+    <p class="blessing-lead" style="margin-top:1.2rem">Nos complace invitarte a<br>ser parte de este gran día.</p>
+  </div>
+</section>
+
+<!-- Cuenta regresiva con fondo -->
+<section id="cuenta" class="count-hero lazy-bg" data-bg="assets/foto1.jpg">
+  <div class="count-inner" data-aos="zoom-in">
+    <div class="count-top">Faltan</div>
+    <div id="countdown"></div>
+    <div class="count-bottom">para mis xv años</div>
+  </div>
+</section>
+
+<!-- Dónde y Cuándo -->
+<section class="where" id="donde">
+  <div class="where-title">Dónde y Cuándo</div>
+  <div class="where-grid" data-aos="fade-up">
+    <article class="where-card">
+      <img src="assets/iglesia_sanmateo.jpg" alt="Iglesia de San Mateo" loading="lazy" decoding="async">
+      <div class="where-body">
+        <div class="where-title2">Ceremonia Religiosa</div>
+        <p>Iglesia de San Mateo</p>
+        <p><strong>5:00 pm</strong></p>
+        <a class="map-btn" href="https://maps.app.goo.gl/MfVHq7AYyLcMKAkMA?g_st=iw" target="_blank" rel="noopener">Ver Mapa</a>
+      </div>
+    </article>
+    <article class="where-card">
+      <img src="assets/salon.jpg" alt="Jardín de Eventos Mo&Bu" loading="lazy" decoding="async">
+      <div class="where-body">
+        <div class="where-title2">Recepción</div>
+        <p>Jardín de Eventos Mo&amp;Bu</p>
+        <p><strong>7:30 pm</strong></p>
+        <a class="map-btn" href="https://maps.app.goo.gl/9CruuGTGEUBnbPL77?g_st=iw" target="_blank" rel="noopener">Ver Mapa</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Vestimenta -->
+<section class="dress" id="vestimenta">
+  <div class="divider"></div>
+  <div class="dress-card" data-aos="fade-up">
+    <div class="dress-title">Código De Vestimenta</div>
+    <div class="dress-code">Formal</div>
+    <span class="dress-icon" aria-hidden="true"></span>
+    <img src="assets/formal-icon.png" alt="" class="dress-icon-img" aria-hidden="true">
+    <p class="dress-note">
+      Los <strong>tonos rosa y dorado</strong> estarán
+      <strong>reservados para la quinceañera</strong>.
+      <span class="swatches" aria-hidden="true">
+        <span class="swatch rose" title="Rosa"></span>
+        <span class="swatch gold" title="Dorado"></span>
+      </span>
+    </p>
+  </div>
+</section>
+
+<!-- Timeline -->
+<section id="timeline">
+  <div class="divider"></div>
+  <h2 class="section-title" data-aos="fade-up">Te Compartimos Los Detalles<br>De La Celebración</h2>
+  <ul class="tl-list" data-aos="fade-up">
+    <li class="tl-item">
+      <span class="tl-time">5:00 pm</span>
+      <span class="tl-title">Ceremonia<br>Religiosa</span>
+      <div class="tl-icon"><img src="assets/iglesia-icon.png" alt="Icono iglesia" width="180" height="180" loading="lazy" decoding="async"></div>
+    </li>
+    <li class="tl-item">
+      <span class="tl-time">8:00 pm</span>
+      <span class="tl-title">Presentación</span>
+      <div class="tl-icon"><img src="assets/quinceañera-icon.png" alt="Icono quinceañera" width="180" height="180" loading="lazy" decoding="async"></div>
+    </li>
+    <li class="tl-item">
+      <span class="tl-time">9:00 pm</span>
+      <span class="tl-title">Cena</span>
+      <div class="tl-icon"><img src="assets/cena-icon.png" alt="Icono cena" width="180" height="180" loading="lazy" decoding="async"></div>
+    </li>
+    <li class="tl-item">
+      <span class="tl-time">Al finalizar</span>
+      <span class="tl-title">Baile</span>
+      <div class="tl-icon"><img src="assets/baile-icon.png" alt="Icono baile" width="180" height="180" loading="lazy" decoding="async"></div>
+    </li>
+  </ul>
+</section>
+
+<!-- Galería -->
+<section id="galeria">
+  <div class="divider"></div>
+  <h2 class="section-title" data-aos="fade-up">Galería</h2>
+  <div class="swiper" data-aos="zoom-in">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide"><img src="assets/foto1.jpg" alt="" loading="lazy" decoding="async"></div>
+      <div class="swiper-slide"><img src="assets/foto2.jpg" alt="" loading="lazy" decoding="async"></div>
+      <div class="swiper-slide"><img src="assets/foto3.jpg" alt="" loading="lazy" decoding="async"></div>
+      <div class="swiper-slide"><img src="assets/foto4.jpg" alt="" loading="lazy" decoding="async"></div>
+    </div>
+  </div>
+</section>
+
+<!-- RSVP -->
+<section id="rsvp">
+  <div class="divider"></div>
+
+  <!-- Pase personalizado -->
+  <div id="passCard" class="pass-card" aria-live="polite">
+    <div class="line1"></div>
+    <div class="line2"></div>
+  </div>
+
+  <h2 class="section-title" data-aos="fade-up">¿Nos Acompañas?</h2>
+  <a class="btn" id="rsvpBtn"
+     href="https://wa.me/527471511050?text=%C2%A1Hola%21%20Confirmo%20mi%20asistencia%20a%20los%20XV%20de%20Citlali%20Abigail%20%2813%20de%20septiembre%20de%202025%29.%20Mi%20nombre%20es%3A%20_______.%20Acompa%C3%B1antes%3A%20____."
+     target="_blank" rel="noopener" data-aos="zoom-in" data-aos-delay="100">
+    Confirmar Por WhatsApp
+  </a>
+</section>
+
+<section style="padding:3rem 1rem;text-align:center;font-size:.8rem;color:#7d756f;">
+  Con cariño, familia Varela Hernandez
+</section>
+
+<!-- Libs -->
+<script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script defer src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+<script>
+/* AOS + Swiper */
+window.addEventListener('DOMContentLoaded',()=>{
+  AOS.init({duration:800,once:true});
+  new Swiper('.swiper',{loop:true,autoplay:{delay:2600,disableOnInteraction:false},grabCursor:true});
+});
+
+/* Countdown */
+const target=new Date('2025-09-13T00:00:00');
+const box=document.getElementById('countdown');
+['DÍAS','HRS','MIN','SEG'].forEach(l=>box.insertAdjacentHTML('beforeend',`<div class="cd-box"><div class="cd-num">00</div><div class="cd-label">${l}</div></div>`));
+const nums=[...box.querySelectorAll('.cd-num')];
+function tick(){let t=Math.max(0,(target-Date.now())/1000);[86400,3600,60,1].forEach((s,i)=>{const v=Math.floor(t/s);t%=s;nums[i].textContent=v.toString().padStart(2,'0');});}
+tick(); setInterval(tick,1000);
+
+/* Timeline activo */
+const tlList=document.querySelector('.tl-list');
+const tlItems=[...document.querySelectorAll('.tl-item')];
+function timelineProgress(){
+  if(!tlList) return;
+  const r=tlList.getBoundingClientRect(), h=window.innerHeight;
+  const p=Math.min(Math.max((h - r.top)/r.height,0),1);
+  tlList.style.setProperty('--line-progress', p.toFixed(3));
+  const mid=h*0.55; let best=-1, bestDist=Infinity;
+  tlItems.forEach((it,i)=>{const ir=it.getBoundingClientRect(); const c=ir.top+ir.height/2; const d=Math.abs(c-mid); if(d<bestDist){bestDist=d;best=i;}});
+  tlItems.forEach((it,i)=>it.classList.toggle('active',i===best));
+}
+timelineProgress();
+['scroll','resize','load'].forEach(ev=>window.addEventListener(ev,timelineProgress));
+
+/* Splash + música */
+const splash=document.getElementById('splash');
+const musicBtn=document.getElementById('musicBtn');
+const audio=new Audio('assets/song.mp3'); audio.loop=true;
+
+const icons={pause:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>',music:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19a3 3 0 1 1-2-2.83V6a1 1 0 0 1 .8-.98l9-2A1 1 0 0 1 18 4v9.17A3.001 3.001 0 1 1 16 16V6.89l-6 1.33V19z"/></svg>'};
+function setMusicIcon(playing){ musicBtn.innerHTML=playing?icons.pause:icons.music; musicBtn.setAttribute('aria-label',playing?'Pausar música':'Reproducir música'); }
+function openEnvelope(){
+  splash.classList.add('open');
+  setTimeout(()=>{
+    splash.style.display='none';
+    document.body.classList.remove('no-scroll');
+    if(window.AOS && AOS.refresh) AOS.refresh();
+    musicBtn.classList.add('show');
+    audio.play().then(()=>setMusicIcon(true)).catch(()=>setMusicIcon(false));
+  },1100);
+}
+splash.addEventListener('click',openEnvelope);
+splash.tabIndex=0;
+splash.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openEnvelope();}});
+
+musicBtn.addEventListener('click',()=>{
+  if(audio.paused){ audio.play().then(()=>setMusicIcon(true)).catch(()=>setMusicIcon(false)); }
+  else{ audio.pause(); setMusicIcon(false); }
+});
+
+/* Lazy background */
+const lazyBgEls=document.querySelectorAll('.lazy-bg');
+if('IntersectionObserver' in window){
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const src=e.target.getAttribute('data-bg');
+        if(src) e.target.style.background=`url("${src}") center/cover no-repeat`;
+        io.unobserve(e.target);
+      }
+    });
+  },{rootMargin:'300px 0px'});
+  lazyBgEls.forEach(el=>io.observe(el));
+}else{
+  lazyBgEls.forEach(el=>{const src=el.getAttribute('data-bg'); if(src) el.style.background=`url("${src}") center/cover no-repeat`;});
+}
+
+/* ---------- Utilidades texto ---------- */
+/* Title Case compatible con acentos/ñ (sin usar \b) */
+function toTitleCaseEs(str){
+  const lower = String(str ?? '').toLowerCase();
+  return lower.replace(/[a-záéíóúüñ]+/gi, w => w.charAt(0).toUpperCase() + w.slice(1));
+}
+/* Repara mojibake típico (CabaÃ±as -> Cabañas) */
+function fixMojibake(str){
+  const s = String(str ?? '');
+  if (/[ÃÂ]/.test(s)) {
+    try {
+      const fixed = decodeURIComponent(escape(s));
+      if (fixed && fixed !== s) return fixed;
+    } catch(e){}
+  }
+  return s;
+}
+/* Normaliza Unicode (NFC) */
+function normalizeNFC(str){
+  try { return String(str ?? '').normalize('NFC'); }
+  catch { return String(str ?? ''); }
+}
+
+/* ---------- Normaliza códigos ---------- */
+function normalizeCode(s){ return String(s||'').trim().toLowerCase(); }
+
+/* ---------- Tolerancia a ceros a la izquierda y notación científica ---------- */
+function expandIfScientific(code){
+  const m = String(code).match(/^(\d+)[eE]\+?(\d+)$/);
+  if(!m) return null;
+  const base = m[1]; const exp = parseInt(m[2],10);
+  const expanded = base + '0'.repeat(exp);
+  const canonMant = base[0] + (base.length>1?('.'+base.slice(1)):'');
+  const canonExp = exp + (base.length - 1);
+  const canon = `${canonMant}e+${canonExp}`;
+  return {expanded, canon};
+}
+function findGuest(rawMap, code){
+  const n = normalizeCode(code);
+  const G = {}; Object.keys(rawMap).forEach(k => G[normalizeCode(k)] = rawMap[k]);
+  if(G[n]) return {key:n, g:G[n]};
+  const keys = Object.keys(rawMap);
+  const strip0 = s => normalizeCode(s).replace(/^0+/, '');
+  const targetNo0 = strip0(n);
+  const cands = keys.filter(k => strip0(k) === targetNo0);
+  if(cands.length === 1){
+    const kn = normalizeCode(cands[0]);
+    return {key:kn, g:rawMap[cands[0]]};
+  }
+  const sci = expandIfScientific(n);
+  if(sci){
+    const cand1 = keys.find(k => normalizeCode(k) === normalizeCode(sci.expanded));
+    if(cand1) return {key:normalizeCode(cand1), g:rawMap[cand1]};
+    const cand2 = keys.find(k => normalizeCode(k) === normalizeCode(sci.canon));
+    if(cand2) return {key:normalizeCode(cand2), g:rawMap[cand2]};
+  }
+  return null;
+}
+
+/* --------- PASE PERSONAL: por código o por query param --------- */
+const PERSONAL_PASS_CODES = new Set([
+  // Agrega aquí códigos que quieras marcar SIEMPRE como "pase personal"
+  // 'abc123'
+]);
+function isPersonalPass(code, g){
+  // Fuerza por query param ?personal=1
+  if ((new URLSearchParams(location.search)).get('personal') === '1') return true;
+  if (!code) return false;
+  if (PERSONAL_PASS_CODES.has(code)) return true;
+  // O detecta banderas en el JSON:
+  const tipo  = String(g?.tipo||'').toLowerCase();
+  const cate  = String(g?.categoria||'').toLowerCase();
+  const grupo = String(g?.grupo||'').toLowerCase();
+  if (g?.personal === true) return true;
+  if (tipo === 'personal') return true;
+  if (cate === 'quinceañera' || grupo === 'quinceañera') return true;
+  return false;
+}
+
+/* Personalización por código ?i= + soporte pase personal genérico */
+(async function personalizeByCode(){
+  try{
+    const qs = new URLSearchParams(location.search);
+    let code = qs.get('i') || qs.get('I') || qs.get('code') || qs.get('c');
+    if(!code && location.hash){
+      const hs = new URLSearchParams(location.hash.slice(1));
+      code = hs.get('i') || hs.get('code') || hs.get('c');
+    }
+    const forcePersonal = qs.get('personal') === '1';
+    const anon = qs.get('anon') === '1';
+
+    let g = null, codeKey = null;
+
+    if (code) {
+      // Hay código: intentamos cargar invitado
+      const jsonUrl = 'assets/invitados.json?v=' + Date.now();
+      const raw = await fetch(jsonUrl, {cache:'no-store'}).then(r=>r.json());
+      const match = findGuest(raw, code);
+      if (match) { g = match.g; codeKey = match.key; }
+      // Si no encontramos y no es pase personal forzado, salimos silenciosamente
+      if (!g && !forcePersonal) return;
+    } else {
+      // No hay código: solo seguimos si es pase personal forzado
+      if (!forcePersonal) return;
+    }
+
+    // Si no hay invitado (modo genérico), creamos uno vacío
+    if (!g) g = { nombre: '', pases: 1 };
+
+    // Normaliza nombre
+    let nombreRaw = g.nombre || '';
+    nombreRaw = fixMojibake(nombreRaw);
+    nombreRaw = normalizeNFC(nombreRaw);
+    const nombreTC = toTitleCaseEs(nombreRaw).trim();
+
+    // Pases y texto
+    const p = Number(g.pases);
+    const pases = Number.isFinite(p) && p > 0 ? p : 1;
+    const personal = isPersonalPass(codeKey, g);
+    const paseTxt  = personal ? 'Pase personal'
+                              : `Pase para ${pases===1 ? '1 persona' : pases + ' personas'}`;
+
+    // Pintar tarjeta
+    const passCard = document.getElementById('passCard');
+    if(passCard){
+      passCard.querySelector('.line1').textContent = paseTxt;
+      const nameEl = passCard.querySelector('.line2');
+      nameEl.textContent = nombreTC;
+      // Ocultar nombre si anon=1 o no hay nombre
+      if (anon || !nombreTC) nameEl.style.display = 'none';
+      passCard.style.display = 'block';
+    }
+
+    // WhatsApp
+    const rsvp = document.getElementById('rsvpBtn');
+    if(rsvp){
+      let msj = `¡Hola! Confirmo mi asistencia a los XV de Citlali Abigail (13 de septiembre de 2025). ${paseTxt}. `;
+      if (!anon && nombreTC) msj += `Nombre: ${nombreTC}.`;
+      rsvp.href = `https://wa.me/527471511050?text=${encodeURIComponent(msj)}`;
+    }
+  }catch(e){ console.error('Personalización:', e); }
+})();
+
+/* Verificación: autoabrir sobre y silenciar audio */
+(function(){
+  try{
+    const qp = new URLSearchParams(location.search);
+    if(qp.get('mute')==='1' && typeof audio!=='undefined'){ audio.muted = true; }
+    if(qp.get('autoopen')==='1'){
+      const tryOpen = ()=>{ if(typeof openEnvelope==='function') openEnvelope(); };
+      setTimeout(tryOpen, 300);
+    }
+  }catch(e){ console.warn('Autoopen/mute:', e); }
+})();
+</script>
+</body>
+</html>
