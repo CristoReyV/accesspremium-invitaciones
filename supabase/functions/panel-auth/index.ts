@@ -1,35 +1,30 @@
 // ============================================================
 // Supabase Edge Function: panel-auth
-// Handles: POST /login, POST /logout, GET /validate-session
-//
-// Security:
-// - scrypt hash comparison (timing-safe)
-// - Brute-force rate limiting (private.panel_login_attempts)
-// - Cryptographically secure session tokens (64-byte random)
-// - Session stored as SHA-256 hash in panel_sessions
-// - 12h session expiry
-// - Event isolation: session is bound to a single event_id
-// - Strict CORS restricted to AccessPremium domains
+// Custom event-code authentication for AccessPremium client panel.
+// Routes: POST /login, POST /logout, GET /validate-session
 // ============================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { scrypt } from "https://esm.sh/scrypt-js@3.0.1";
 
-// Deno environment
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// Rate limiting constants
 const MAX_ATTEMPTS = 5;
 const WINDOW_MINUTES = 15;
 const SESSION_HOURS = 12;
+const LOGIN_ATTEMPTS_TABLE = "private_panel_login_attempts";
 
 function isAllowedOrigin(origin: string | null): boolean {
-  if (!origin) return false;
+  if (!origin) return true; // server-to-server / health tooling
   try {
-    const url = new URL(origin);
-    const host = url.hostname.toLowerCase();
-    if (host === "invitaciones-access.smartbrain.lat" || host.endsWith(".invitaciones-access.smartbrain.lat")) return true;
-    if (host === "invitaciones-access.netlify.app" || host.endsWith("--invitaciones-access.netlify.app")) return true;
+    const { protocol, hostname } = new URL(origin);
+    if (protocol !== "http:" && protocol !== "https:") return false;
+    const host = hostname.toLowerCase();
+    if (host === "invitaciones-access.smartbrain.lat") return true;
+    if (host === "panel.invitaciones-access.smartbrain.lat") return true;
+    if (host === "invitaciones-access.netlify.app") return true;
+    if (host.endsWith("--invitaciones-access.netlify.app")) return true;
     if (host === "localhost" || host === "127.0.0.1") return true;
   } catch {
     return false;
@@ -37,257 +32,249 @@ function isAllowedOrigin(origin: string | null): boolean {
   return false;
 }
 
-function getCorsHeaders(req: Request): Record<string, string> {
+function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("origin");
-  const allowed = isAllowedOrigin(origin);
+  const allowOrigin = origin && isAllowedOrigin(origin)
+    ? origin
+    : "https://invitaciones-access.smartbrain.lat";
   return {
-    "Access-Control-Allow-Origin": allowed && origin ? origin : "https://invitaciones-access.smartbrain.lat",
+    "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Vary": "Origin",
   };
 }
 
-function json(data: unknown, status = 200, req?: Request): Response {
-  const headers = req ? getCorsHeaders(req) : {
-    "Access-Control-Allow-Origin": "https://invitaciones-access.smartbrain.lat",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Vary": "Origin",
-  };
+function json(req: Request, data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...headers, "Content-Type": "application/json" },
+    headers: { ...corsHeaders(req), "Content-Type": "application/json; charset=utf-8" },
   });
 }
 
-function error(message: string, status = 400, code?: string, req?: Request): Response {
-  return json({ ok: false, error: message, ...(code && { code }) }, status, req);
+function fail(req: Request, message: string, status = 400, code?: string): Response {
+  return json(req, { error: message, ...(code ? { code } : {}) }, status);
 }
-
-// ---- Crypto helpers ----
 
 async function sha256hex(input: string): Promise<string> {
-  const data = new TextEncoder().encode(input);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  const bytes = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function generateToken(): string {
-  const bytes = new Uint8Array(64);
+function randomToken(): string {
+  const bytes = new Uint8Array(32); // 256 bits
   crypto.getRandomValues(bytes);
-  return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Timing-safe string comparison
-function timingSafeEqual(a: string, b: string): boolean {
+function decodeBase64Url(value: string): Uint8Array {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+  const binary = atob(padded);
+  return Uint8Array.from(binary, (c) => c.charCodeAt(0));
+}
+
+function timingSafeEqualBytes(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
 }
 
-// Parse scrypt hash: scrypt$N$r$p$salt$hash (all base64url or hex)
 async function verifyScrypt(code: string, storedHash: string): Promise<boolean> {
   const parts = storedHash.split("$");
-  if (parts.length < 6 || parts[0] !== "scrypt") return false;
+  if (parts.length !== 6 || parts[0] !== "scrypt") return false;
+
+  const n = Number(parts[1]);
+  const r = Number(parts[2]);
+  const p = Number(parts[3]);
+  if (!Number.isInteger(n) || !Number.isInteger(r) || !Number.isInteger(p) || n <= 1 || r <= 0 || p <= 0) {
+    return false;
+  }
 
   try {
-    const N = parseInt(parts[1]);
-    const r = parseInt(parts[2]);
-    const p = parseInt(parts[3]);
-    const saltHex = parts[4];
-    const hashHex = parts[5];
-
-    const salt = hexToBytes(saltHex);
-    const expectedHash = hexToBytes(hashHex);
-    const keyLength = expectedHash.length;
-
-    const { scrypt } = await import("https://esm.sh/scrypt-js@3.0.1");
-    const derived = await scrypt(
-      new TextEncoder().encode(code),
-      salt,
-      N,
-      r,
-      p,
-      keyLength
-    );
-
-    const derivedHex = Array.from(derived).map((b: number) => b.toString(16).padStart(2, "0")).join("");
-    return timingSafeEqual(derivedHex, hashHex);
+    const salt = decodeBase64Url(parts[4]);
+    const expected = decodeBase64Url(parts[5]);
+    const derived = await scrypt(new TextEncoder().encode(code), salt, n, r, p, expected.length);
+    return timingSafeEqualBytes(Uint8Array.from(derived), expected);
   } catch {
     return false;
   }
 }
 
-function hexToBytes(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
+function bearerToken(req: Request): string | null {
+  const header = req.headers.get("authorization");
+  if (!header) return null;
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  return match?.[1]?.trim() || null;
 }
 
-// ---- IP hashing ----
-async function hashIP(ip: string): Promise<string> {
-  return sha256hex(`ip:${ip}:2024`);
+async function keyedIpHash(req: Request): Promise<string> {
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const rawIp = forwarded || req.headers.get("cf-connecting-ip") || "unknown";
+  return sha256hex(`${SERVICE_ROLE_KEY}|${rawIp}`);
 }
-
-// ---- Handlers ----
 
 async function handleLogin(req: Request): Promise<Response> {
-  const body = await req.json().catch(() => null);
-  if (!body?.code) return error("Código de acceso inválido.", 400, undefined, req);
+  const body = await req.json().catch(() => null) as { code?: unknown } | null;
+  const code = typeof body?.code === "string" ? body.code.trim().toUpperCase() : "";
+  if (code.length < 4 || code.length > 128) return fail(req, "Código de acceso inválido.", 400);
 
-  const code: string = String(body.code).trim().toUpperCase();
-  if (!code || code.length < 4) return error("Código de acceso inválido.", 400, undefined, req);
+  const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
-  const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-
-  // Rate limiting
-  const rawIP = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  const ipHash = await hashIP(rawIP);
-  const windowStart = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
-
-  const { count } = await db
-    .from("private_panel_login_attempts")
-    .select("*", { count: "exact", head: true })
+  const ipHash = await keyedIpHash(req);
+  const windowStart = new Date(Date.now() - WINDOW_MINUTES * 60_000).toISOString();
+  const { count, error: rateError } = await db
+    .from(LOGIN_ATTEMPTS_TABLE)
+    .select("id", { count: "exact", head: true })
     .eq("ip_hash", ipHash)
     .eq("success", false)
     .gte("attempted_at", windowStart);
 
+  if (rateError) {
+    console.error("panel-auth rate-limit lookup failed", rateError.message);
+    return fail(req, "Error interno del servidor.", 500);
+  }
   if ((count ?? 0) >= MAX_ATTEMPTS) {
-    return error("Demasiados intentos fallidos. Intenta de nuevo en 15 minutos.", 429, undefined, req);
+    return fail(req, "Demasiados intentos fallidos. Intenta de nuevo en 15 minutos.", 429, "RATE_LIMITED");
   }
 
-  // Find access code (search all - no info leakage)
-  const { data: codes } = await db
+  const { data: codes, error: codesError } = await db
     .from("event_access_codes")
-    .select("id, event_id, code_hash, is_active")
-    .eq("is_active", true);
+    .select("id, event_id, code_hash")
+    .eq("enabled", true)
+    .is("revoked_at", null);
 
-  let matchedCode: { id: string; event_id: string } | null = null;
+  if (codesError) {
+    console.error("panel-auth access-code lookup failed", codesError.message);
+    return fail(req, "Error interno del servidor.", 500);
+  }
 
-  if (codes && codes.length > 0) {
-    for (const c of codes) {
-      let matches = false;
-      try {
-        if (c.code_hash && c.code_hash.startsWith("scrypt$")) {
-          matches = await verifyScrypt(code, c.code_hash);
-        }
-      } catch {
-        // Skip invalid hash
-      }
-      if (matches) {
-        matchedCode = { id: c.id, event_id: c.event_id };
-        break;
-      }
+  let matched: { id: string; event_id: string } | null = null;
+  for (const candidate of codes ?? []) {
+    if (typeof candidate.code_hash === "string" && await verifyScrypt(code, candidate.code_hash)) {
+      matched = { id: candidate.id, event_id: candidate.event_id };
+      break;
     }
   }
 
-  // Log the attempt (never reveal whether code matched partially)
-  await db.from("private_panel_login_attempts").insert({
+  const { error: auditError } = await db.from(LOGIN_ATTEMPTS_TABLE).insert({
     ip_hash: ipHash,
-    success: !!matchedCode,
-    attempted_at: new Date().toISOString(),
+    success: Boolean(matched),
   });
-
-  if (!matchedCode) {
-    return error("Código de acceso inválido.", 401, undefined, req);
+  if (auditError) {
+    console.error("panel-auth audit insert failed", auditError.message);
+    return fail(req, "Error interno del servidor.", 500);
   }
 
-  // Get event info
-  const { data: event } = await db
+  if (!matched) return fail(req, "Código de acceso inválido.", 401);
+
+  const { data: event, error: eventError } = await db
     .from("events")
-    .select("id, slug, name")
-    .eq("id", matchedCode.event_id)
+    .select("id, slug, status")
+    .eq("id", matched.event_id)
     .single();
 
-  if (!event) return error("Evento no encontrado.", 404, undefined, req);
+  if (eventError || !event || event.status !== "active") {
+    return fail(req, "Código de acceso inválido.", 401);
+  }
 
-  // Create session
-  const rawToken = generateToken();
-  const tokenHash = await sha256hex(rawToken);
-  const expiresAt = new Date(Date.now() + SESSION_HOURS * 3600 * 1000).toISOString();
+  const token = randomToken();
+  const tokenHash = await sha256hex(token);
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + SESSION_HOURS * 3_600_000).toISOString();
 
-  await db.from("panel_sessions").insert({
-    event_id: matchedCode.event_id,
+  const { error: sessionError } = await db.from("panel_sessions").insert({
+    event_id: event.id,
     token_hash: tokenHash,
     expires_at: expiresAt,
-    last_used_at: new Date().toISOString(),
-    access_code_id: matchedCode.id,
+    last_used_at: now.toISOString(),
   });
+  if (sessionError) {
+    console.error("panel-auth session insert failed", sessionError.message);
+    return fail(req, "Error interno del servidor.", 500);
+  }
 
-  return json({
-    ok: true,
-    token: rawToken,
+  await db.from("event_access_codes").update({ last_used_at: now.toISOString() }).eq("id", matched.id);
+
+  return json(req, {
+    token,
     event_id: event.id,
     event_slug: event.slug,
     expires_at: expiresAt,
-  }, 200, req);
+  });
 }
 
 async function handleLogout(req: Request): Promise<Response> {
-  const authHeader = req.headers.get("Authorization");
-  const token = authHeader?.replace("Bearer ", "").trim();
-  if (!token) return json({ ok: true }, 200, req);
+  const token = bearerToken(req);
+  if (!token) return json(req, { ok: true });
 
-  const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+  const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   const tokenHash = await sha256hex(token);
-  await db.from("panel_sessions").delete().eq("token_hash", tokenHash);
+  await db
+    .from("panel_sessions")
+    .update({ revoked_at: new Date().toISOString() })
+    .eq("token_hash", tokenHash)
+    .is("revoked_at", null);
 
-  return json({ ok: true }, 200, req);
+  return json(req, { ok: true });
 }
 
 async function handleValidateSession(req: Request): Promise<Response> {
-  const authHeader = req.headers.get("Authorization");
-  const token = authHeader?.replace("Bearer ", "").trim();
-  if (!token) return json({ valid: false }, 200, req);
+  const token = bearerToken(req);
+  if (!token) return json(req, { valid: false });
 
-  const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+  const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   const tokenHash = await sha256hex(token);
-
-  const { data: session } = await db
+  const { data: session, error: sessionError } = await db
     .from("panel_sessions")
     .select("id, event_id, expires_at")
     .eq("token_hash", tokenHash)
-    .single();
+    .is("revoked_at", null)
+    .maybeSingle();
 
-  if (!session) return json({ valid: false }, 200, req);
-  if (new Date(session.expires_at) < new Date()) {
-    await db.from("panel_sessions").delete().eq("token_hash", tokenHash);
-    return json({ valid: false, code: "SESSION_EXPIRED" }, 200, req);
+  if (sessionError || !session) return json(req, { valid: false });
+
+  if (Date.parse(session.expires_at) <= Date.now()) {
+    await db.from("panel_sessions").update({ revoked_at: new Date().toISOString() }).eq("id", session.id);
+    return json(req, { valid: false, code: "SESSION_EXPIRED" });
   }
 
-  // Update last_used_at
-  await db.from("panel_sessions").update({ last_used_at: new Date().toISOString() }).eq("token_hash", tokenHash);
+  const now = new Date().toISOString();
+  await db.from("panel_sessions").update({ last_used_at: now }).eq("id", session.id);
+  const { data: event } = await db.from("events").select("slug, status").eq("id", session.event_id).maybeSingle();
+  if (!event || event.status !== "active") return json(req, { valid: false });
 
-  const { data: event } = await db.from("events").select("slug").eq("id", session.event_id).single();
-
-  return json({
+  return json(req, {
     valid: true,
     event_id: session.event_id,
-    event_slug: event?.slug,
+    event_slug: event.slug,
     expires_at: session.expires_at,
-  }, 200, req);
+  });
 }
 
-// ---- Main dispatcher ----
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
+  const origin = req.headers.get("origin");
+  if (origin && !isAllowedOrigin(origin)) return fail(req, "Origen no permitido.", 403);
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
 
   const url = new URL(req.url);
-  const path = url.pathname.replace(/\/functions\/v1\/panel-auth/, "").replace(/\/$/, "");
+  const path = url.pathname.replace(/^\/functions\/v1\/panel-auth/, "").replace(/\/$/, "") || "/";
 
   try {
     if (req.method === "POST" && path === "/login") return await handleLogin(req);
     if (req.method === "POST" && path === "/logout") return await handleLogout(req);
     if (req.method === "GET" && path === "/validate-session") return await handleValidateSession(req);
-    return error("Not found", 404, undefined, req);
-  } catch (e) {
-    console.error("panel-auth error:", e);
-    return error("Error interno del servidor.", 500, undefined, req);
+    return fail(req, "Not found", 404);
+  } catch (error) {
+    console.error("panel-auth unhandled error", error);
+    return fail(req, "Error interno del servidor.", 500);
   }
 });
