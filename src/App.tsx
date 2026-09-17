@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import WeddingEditorial from "./pages/templates/WeddingEditorial";
 import TemplateDemoPage from "./pages/TemplateDemoPage";
 import { DEMO_ROUTE_CATEGORIES } from "./config/routes";
+import InvitationRouting from "./routing/InvitationRouting";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <InvitationRouting>
         <Routes>
           {/* Landing principal */}
           <Route path="/" element={<Index />} />
@@ -41,6 +43,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </InvitationRouting>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

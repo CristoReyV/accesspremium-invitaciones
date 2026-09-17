@@ -34,20 +34,17 @@ import receptionImg     from "@/assets/invitations/cafe-espresso/itinerary-recep
 import watercolorImg    from "@/assets/invitations/cafe-espresso/watercolor-floral.png";
 import sobreCitlaliImg  from "@/assets/invitations/cafe-espresso/sobre-citlali.png";
 import musicFile        from "@/assets/invitations/cafe-espresso/hasta-mi-final.mp3";
-import photoPareja      from "@/assets/invitations/cafe-espresso/photo-pareja-boda.jpg";
-import photoIglesia     from "@/assets/invitations/cafe-espresso/photo-pareja-iglesia.jpg";
-import photoAbrazo      from "@/assets/invitations/cafe-espresso/photo-pareja-abrazo.jpg";
-import photoAnillos     from "@/assets/invitations/cafe-espresso/photo-anillos-rosas.jpg";
-import photoManos       from "@/assets/invitations/cafe-espresso/photo-manos-ramo.jpg";
-import photoAnilloDedo  from "@/assets/invitations/cafe-espresso/photo-anillo-dedo.jpg";
-import photoAnilloDedo2 from "@/assets/invitations/cafe-espresso/photo-anillo-dedo-2.jpg";
+import photoHero from "@/assets/invitations/cafe-espresso/fotos/HORIZONTAL PRINCIPAL.webp";
+import photoPortrait from "@/assets/invitations/cafe-espresso/fotos/VERTICAL PRINCIPAL.webp";
+import photoEmbrace from "@/assets/invitations/cafe-espresso/fotos/HORIZONTAL (1).webp";
+import photoBeach from "@/assets/invitations/cafe-espresso/fotos/HORIZONTAL (3).webp";
+import photoClosing from "@/assets/invitations/cafe-espresso/fotos/HORIZONTAL (5).webp";
 
 const ASSETS = {
   paper: paperImg, floral: floralImg, floralDerecha: floralDerechaImg, seal: sealImg, relief: reliefImg,
   itineraryRings: ringsImg, itineraryReception: receptionImg,
   watercolor: watercolorImg, sobreCitlali: sobreCitlaliImg, music: musicFile,
-  photoPareja, photoIglesia, photoAbrazo, photoAnillos,
-  photoManos, photoAnilloDedo, photoAnilloDedo2,
+  photoHero, photoPortrait, photoEmbrace, photoBeach, photoClosing,
 };
 
 // ─── Hook Scroll Reveal ───────────────────────────────────────
@@ -333,7 +330,6 @@ export default function WeddingCafeEspresso() {
   const data = BODA_AYDE_OCTAVIO;
   const [isOpened, setIsOpened] = useState(false);
   const [showContent, setShowContent] = useState(false);
-  const hasForm = RSVP_FORM_URL !== "PENDIENTE_LINK_FORMS";
 
   useScrollReveal();
 
@@ -418,6 +414,13 @@ export default function WeddingCafeEspresso() {
               <span className="text-[10px] tracking-[0.35em] uppercase mt-2" style={{ color: C.textMuted }}>Enero · 2027</span>
             </div>
           </div>
+
+          <figure className="relative z-10 w-full max-w-lg mx-auto mt-10 p-2"
+            style={{ border: `1px solid ${C.gold}60`, backgroundColor: C.ivory, boxShadow: `0 16px 40px ${C.espresso}18` }}>
+            <img src={ASSETS.photoHero} alt="Ayde y Octavio frente al mar, tomados de las manos"
+              width={3000} height={2000} loading="eager" decoding="async"
+              className="w-full h-auto" style={{ aspectRatio: "3 / 2", objectFit: "cover", objectPosition: "52% 62%" }} />
+          </figure>
 
           {/* Scroll indicator */}
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1" style={{ opacity: 0.35 }}>
@@ -519,7 +522,7 @@ export default function WeddingCafeEspresso() {
         {/* ══════════════════════════════════════════════════════════
             4. MOMENTOS — Composición editorial de revista
         ══════════════════════════════════════════════════════════ */}
-        <section className="py-16 px-5 cafe-reveal"
+        <section className="relative py-16 px-5 cafe-reveal"
           style={{ backgroundImage: `url(${ASSETS.paper})`, backgroundSize: "cover", backgroundPosition: "center" }}>
           <div className="absolute inset-0" style={{ background: "rgba(251,247,241,0.3)", pointerEvents: "none" }} />
           <div className="max-w-xl mx-auto relative z-10">
@@ -532,43 +535,26 @@ export default function WeddingCafeEspresso() {
               <div className="w-12 h-px mx-auto mt-1" style={{ background: `linear-gradient(to right, transparent, ${C.gold}, transparent)` }} />
             </div>
 
-            {/* Foto protagonista */}
-            <div className="relative overflow-hidden mb-3 cafe-card-hover"
-              style={{ borderRadius: "2px", border: `1px solid ${C.gold}45`, boxShadow: `0 30px 90px ${C.espresso}25, 0 0 0 1px ${C.champagne}30` }}>
-              <div className="absolute inset-0 pointer-events-none z-10"
-                style={{ background: `linear-gradient(to bottom, rgba(44,26,14,0.02) 0%, transparent 25%, rgba(44,26,14,0.45) 100%)` }} />
-              <img src={ASSETS.photoPareja} alt="Ayde y Octavio"
-                className="w-full cafe-img-reveal"
-                style={{ height: "min(460px, 65vw)", objectFit: "cover", objectPosition: "center top" }} />
-              {/* Firma flotante */}
-              <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-12 z-20"
-                style={{ background: `linear-gradient(to top, ${C.espresso}82 0%, transparent 100%)` }}>
-                <p className="text-white text-lg italic text-center" style={{ fontFamily: "'Cormorant Garamond', serif", textShadow: "0 2px 10px rgba(0,0,0,0.7)" }}>
-                  "Un amor para siempre"
+            {/* Díptico editorial: retrato principal y una escena de apoyo. */}
+            <div className="grid grid-cols-[1.15fr_0.85fr] items-start gap-3 sm:gap-5">
+              <figure className="overflow-hidden p-1.5 cafe-card-hover"
+                style={{ border: `1px solid ${C.gold}45`, backgroundColor: C.ivory, boxShadow: `0 18px 48px ${C.espresso}18` }}>
+                <img src={ASSETS.photoPortrait} alt="Ayde y Octavio entre palmeras"
+                  width={2000} height={3000} loading="lazy" decoding="async"
+                  className="w-full h-auto" style={{ aspectRatio: "2 / 3", objectFit: "cover", objectPosition: "50% 68%" }} />
+              </figure>
+              <div className="pt-10 sm:pt-16">
+                <figure className="overflow-hidden p-1.5 cafe-card-hover"
+                  style={{ border: `1px solid ${C.gold}45`, backgroundColor: C.ivory }}>
+                  <img src={ASSETS.photoEmbrace} alt="Ayde y Octavio abrazados en el mirador"
+                    width={3000} height={2000} loading="lazy" decoding="async"
+                    className="w-full" style={{ aspectRatio: "4 / 5", objectFit: "cover", objectPosition: "46% 60%" }} />
+                </figure>
+                <p className="text-lg sm:text-2xl italic text-center mt-5 leading-snug"
+                  style={{ fontFamily: "'Cormorant Garamond', serif", color: C.cafe }}>
+                  Un amor para siempre
                 </p>
-                <div className="flex items-center justify-center gap-2 mt-1">
-                  <div className="w-4 h-px" style={{ backgroundColor: C.goldLight }} />
-                  <span className="text-[8px] tracking-[0.3em] uppercase" style={{ color: C.goldLight }}>Ayde &amp; Octavio · 2027</span>
-                  <div className="w-4 h-px" style={{ backgroundColor: C.goldLight }} />
-                </div>
-              </div>
-            </div>
-
-            {/* Fila de dos secundarias */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="relative overflow-hidden cafe-card-hover"
-                style={{ borderRadius: "2px", border: `1px solid ${C.gold}35`, boxShadow: `0 10px 28px ${C.espresso}10` }}>
-                <div className="absolute inset-0 z-10 pointer-events-none" style={{ background: `linear-gradient(135deg, ${C.champagne}08, transparent 50%)` }} />
-                <img src={ASSETS.photoAbrazo} alt="Ayde y Octavio"
-                  className="w-full cafe-img-reveal"
-                  style={{ height: "min(200px, 46vw)", objectFit: "cover", objectPosition: "center top" }} />
-              </div>
-              <div className="relative overflow-hidden cafe-card-hover"
-                style={{ borderRadius: "2px", border: `1px solid ${C.gold}35`, boxShadow: `0 10px 28px ${C.espresso}10` }}>
-                <div className="absolute inset-0 z-10 pointer-events-none" style={{ background: `linear-gradient(225deg, ${C.champagne}08, transparent 50%)` }} />
-                <img src={ASSETS.photoAnillos} alt="Anillos"
-                  className="w-full cafe-img-reveal"
-                  style={{ height: "min(200px, 46vw)", objectFit: "cover", objectPosition: "center" }} />
+                <GoldDivider slim />
               </div>
             </div>
           </div>
@@ -645,14 +631,15 @@ export default function WeddingCafeEspresso() {
         {/* ══════════════════════════════════════════════════════════
             7. FOTO EDITORIAL PAREJA
         ══════════════════════════════════════════════════════════ */}
-        <section className="px-5 pb-4 cafe-reveal"
+        <section className="relative px-5 pb-4 cafe-reveal"
           style={{ backgroundImage: `url(${ASSETS.paper})`, backgroundSize: "cover", backgroundPosition: "center" }}>
           <div style={{ position: "absolute", inset: 0, background: "rgba(251,247,241,0.25)", pointerEvents: "none" }} />
           <div className="max-w-lg mx-auto relative z-10">
             <div className="relative overflow-hidden cafe-card-hover"
               style={{ borderRadius: "2px", border: `1px solid ${C.gold}42`, boxShadow: `0 22px 65px ${C.espresso}18` }}>
-              <img src={ASSETS.photoIglesia} alt="Ayde y Octavio" className="w-full cafe-img-reveal"
-                style={{ height: "min(400px, 60vw)", objectFit: "cover", objectPosition: "center top" }} />
+              <img src={ASSETS.photoBeach} alt="Ayde y Octavio sonriendo junto a las olas"
+                width={3000} height={2000} loading="lazy" decoding="async" className="w-full h-auto cafe-img-reveal"
+                style={{ aspectRatio: "3 / 2", objectFit: "cover", objectPosition: "55% 55%" }} />
               <div className="absolute inset-0 flex items-end"
                 style={{ background: "linear-gradient(to top, rgba(44,26,14,0.72) 0%, rgba(44,26,14,0.1) 50%, transparent 100%)" }}>
                 <div className="p-5 w-full text-center">
@@ -760,6 +747,10 @@ export default function WeddingCafeEspresso() {
                 Favor de confirmar su asistencia y agregar los nombres de los asistentes.
               </p>
 
+              <p className="text-sm mb-6 leading-relaxed" style={{ color: C.cafe }}>
+                Indica si asistirán 1 o 2 personas. Ten a la mano tu nombre completo y los nombres de quienes te acompañarán; también puedes dedicar un mensaje a los novios.
+              </p>
+
               {/* Info chips */}
               <div className="space-y-2 mb-7">
                 <div className="flex items-center justify-center gap-2 py-2 px-4 mx-auto w-fit"
@@ -767,50 +758,40 @@ export default function WeddingCafeEspresso() {
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.gold} strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
                   </svg>
-                  <span className="text-[9px] tracking-[0.18em] uppercase" style={{ color: C.moka }}>Pase válido para 2 personas</span>
+                  <span className="text-xs leading-relaxed" style={{ color: C.moka }}>Pase válido para 2 personas</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 py-2 px-4 mx-auto w-fit"
                   style={{ backgroundColor: `${C.skyLight}35`, border: `1px solid ${C.sky}40` }}>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.sky} strokeWidth="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
                   </svg>
-                  <span className="text-[9px] tracking-[0.18em] uppercase" style={{ color: C.cafeClaro }}>Confirmar antes de octubre 2026</span>
+                  <span className="text-xs leading-relaxed" style={{ color: C.cafe }}>Fecha límite para confirmar: octubre de 2026</span>
                 </div>
               </div>
 
               {/* CTA principal */}
-              <a href={hasForm ? RSVP_FORM_URL : "#confirmar"}
-                target={hasForm ? "_blank" : "_self"} rel="noopener noreferrer"
-                className={`cafe-cta-glow w-full flex items-center justify-center gap-3 px-8 py-4 font-medium text-[10px] tracking-[0.18em] uppercase transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] mb-4 ${hasForm ? "" : "cursor-default"}`}
+              <a href={RSVP_FORM_URL}
+                target="_blank" rel="noopener noreferrer"
+                className="cafe-cta-glow w-full flex items-center justify-center gap-3 px-6 py-4 font-medium text-xs tracking-[0.12em] uppercase transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] mb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
                 style={{ background: `linear-gradient(135deg, ${C.espresso}, ${C.moka})`, color: C.ivory, borderRadius: "1px" }}
-                onClick={!hasForm ? (e) => e.preventDefault() : undefined}>
+                aria-describedby="rsvp-destination">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 Confirmar asistencia
               </a>
 
-              {/* Separador contacto alterno */}
-              <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px" style={{ backgroundColor: `${C.latte}22` }} />
-                <span className="text-[8px] tracking-[0.2em] uppercase" style={{ color: C.textLight }}>contacto alterno</span>
-                <div className="flex-1 h-px" style={{ backgroundColor: `${C.latte}22` }} />
-              </div>
-
-              {/* WhatsApp alterno */}
-              <a href={`https://wa.me/${data.rsvpWhatsapp}?text=Hola%2C%20quisiera%20comunicarme%20sobre%20la%20boda%20de%20Ayde%20y%20Octavio.`}
-                target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[9px] tracking-wider uppercase transition-all duration-300 hover:opacity-60"
-                style={{ color: C.textMuted }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-                Contactar por WhatsApp
-              </a>
-
-              <p className="text-[8px] text-center mt-4 px-2 leading-relaxed" style={{ color: C.textLight, fontStyle: "italic" }}>
-                En caso de no poder asistir, favor de avisar con un mes de anticipación.
+              <p id="rsvp-destination" className="text-xs leading-relaxed" style={{ color: C.textMuted }}>
+                La confirmación se realiza únicamente en Google Forms. El formulario se abrirá en una nueva pestaña.
               </p>
+              <div className="mt-6 pt-5" style={{ borderTop: `1px solid ${C.gold}35` }}>
+                <p className="text-sm leading-relaxed" style={{ color: C.cafe }}>
+                  En caso de no poder asistir, favor de avisar con un mes de anticipación.
+                </p>
+                <p className="text-xs mt-3 leading-relaxed" style={{ color: C.textMuted }}>
+                  Números de contacto de los novios: por confirmar.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -830,6 +811,12 @@ export default function WeddingCafeEspresso() {
           {/* Watercolor overlay */}
           <div className="absolute inset-0 cafe-watercolor-shimmer pointer-events-none"
             style={{ backgroundImage: `url(${ASSETS.watercolor})`, backgroundSize: "cover", mixBlendMode: "soft-light" }} />
+
+          <figure className="relative z-10 max-w-lg mx-auto mb-10 p-2" style={{ border: `1px solid ${C.gold}60` }}>
+            <img src={ASSETS.photoClosing} alt="Ayde y Octavio abrazados, mirando juntos hacia el mar"
+              width={3000} height={2000} loading="lazy" decoding="async" className="w-full h-auto"
+              style={{ aspectRatio: "3 / 2", objectFit: "cover", objectPosition: "35% 60%" }} />
+          </figure>
 
           <div className="relative z-10 max-w-sm mx-auto">
             <GoldDivider dark slim />
@@ -857,11 +844,11 @@ export default function WeddingCafeEspresso() {
 
         {/* Botón flotante RSVP */}
         <div className="fixed bottom-6 right-4 z-40" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-          <a href={hasForm ? RSVP_FORM_URL : "#confirmar"}
-            target={hasForm ? "_blank" : "_self"} rel="noopener noreferrer"
+          <a href={RSVP_FORM_URL}
+            target="_blank" rel="noopener noreferrer"
             className="flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 cafe-cta-glow"
             style={{ background: C.espresso, color: C.goldLight, border: `1.5px solid ${C.gold}80`, borderRadius: "50%" }}
-            aria-label="Confirmar asistencia">
+            aria-label="Confirmar asistencia en Google Forms (nueva pestaña)">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
