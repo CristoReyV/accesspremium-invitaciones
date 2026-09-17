@@ -1,18 +1,7 @@
 // ============================================================
 // Supabase Edge Function: panel-api
-// All endpoints require a valid panel session token.
-// Event isolation enforced: session.event_id is always used.
-//
-// Routes:
-//   GET  /event
-//   GET  /summary
-//   GET  /responses
-//   GET  /guests
-//   POST /guests
-//   PUT  /guests/:id
-//   GET  /integration
-//   POST /sync
-//   GET  /export (returns JSON; client does xlsx)
+// All endpoints require a valid custom panel Bearer session.
+// Authorization is derived exclusively from panel_sessions.event_id.
 // ============================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -22,15 +11,31 @@ const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GOOGLE_SA_EMAIL = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
 const GOOGLE_SA_KEY = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY");
 
-let currentOrigin = "https://invitaciones-access.smartbrain.lat";
+type DbClient = ReturnType<typeof createClient>;
+
+type Session = {
+  id: string;
+  event_id: string;
+  expires_at: string;
+};
+
+type SyncCounters = {
+  imported: number;
+  updated: number;
+  skipped: number;
+  errors: number;
+};
 
 function isAllowedOrigin(origin: string | null): boolean {
-  if (!origin) return false;
+  if (!origin) return true;
   try {
-    const url = new URL(origin);
-    const host = url.hostname.toLowerCase();
-    if (host === "invitaciones-access.smartbrain.lat" || host.endsWith(".invitaciones-access.smartbrain.lat")) return true;
-    if (host === "invitaciones-access.netlify.app" || host.endsWith("--invitaciones-access.netlify.app")) return true;
+    const { protocol, hostname } = new URL(origin);
+    if (protocol !== "http:" && protocol !== "https:") return false;
+    const host = hostname.toLowerCase();
+    if (host === "invitaciones-access.smartbrain.lat") return true;
+    if (host === "panel.invitaciones-access.smartbrain.lat") return true;
+    if (host === "invitaciones-access.netlify.app") return true;
+    if (host.endsWith("--invitaciones-access.netlify.app")) return true;
     if (host === "localhost" || host === "127.0.0.1") return true;
   } catch {
     return false;
@@ -38,213 +43,307 @@ function isAllowedOrigin(origin: string | null): boolean {
   return false;
 }
 
-function getCorsHeaders(origin: string | null): Record<string, string> {
-  const allowed = isAllowedOrigin(origin);
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin");
+  const allowOrigin = origin && isAllowedOrigin(origin)
+    ? origin
+    : "https://invitaciones-access.smartbrain.lat";
   return {
-    "Access-Control-Allow-Origin": allowed && origin ? origin : "https://invitaciones-access.smartbrain.lat",
+    "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
     "Vary": "Origin",
   };
 }
 
-function json(data: unknown, status = 200): Response {
+function json(req: Request, data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...getCorsHeaders(currentOrigin), "Content-Type": "application/json" },
+    headers: { ...corsHeaders(req), "Content-Type": "application/json; charset=utf-8" },
   });
 }
 
-function err(message: string, status = 400, code?: string): Response {
-  return json({ ok: false, error: message, ...(code && { code }) }, status);
+function fail(req: Request, message: string, status = 400, code?: string): Response {
+  return json(req, { error: message, ...(code ? { code } : {}) }, status);
 }
 
-// ---- Auth ----
 async function sha256hex(input: string): Promise<string> {
-  const data = new TextEncoder().encode(input);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  const bytes = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-interface Session {
-  event_id: string;
-  expires_at: string;
+function bearerToken(req: Request): string | null {
+  const header = req.headers.get("authorization");
+  if (!header) return null;
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  return match?.[1]?.trim() || null;
 }
 
-async function resolveSession(req: Request, db: ReturnType<typeof createClient>): Promise<Session | null> {
-  // Support both Bearer header and ?token= query param (for export)
-  const authHeader = req.headers.get("Authorization");
-  const url = new URL(req.url);
-  const raw = authHeader?.replace("Bearer ", "").trim() ?? url.searchParams.get("token");
-  if (!raw) return null;
+async function resolveSession(req: Request, db: DbClient): Promise<Session | null> {
+  const token = bearerToken(req);
+  if (!token) return null;
 
-  const tokenHash = await sha256hex(raw);
-  const { data: session } = await db
+  const tokenHash = await sha256hex(token);
+  const { data: session, error } = await db
     .from("panel_sessions")
     .select("id, event_id, expires_at")
     .eq("token_hash", tokenHash)
-    .single();
+    .is("revoked_at", null)
+    .maybeSingle();
 
-  if (!session) return null;
-  if (new Date(session.expires_at) < new Date()) {
-    await db.from("panel_sessions").delete().eq("token_hash", tokenHash);
+  if (error || !session) return null;
+  if (Date.parse(session.expires_at) <= Date.now()) {
+    await db.from("panel_sessions").update({ revoked_at: new Date().toISOString() }).eq("id", session.id);
     return null;
   }
 
-  await db.from("panel_sessions").update({ last_used_at: new Date().toISOString() }).eq("token_hash", tokenHash);
-  return { event_id: session.event_id, expires_at: session.expires_at };
+  await db.from("panel_sessions").update({ last_used_at: new Date().toISOString() }).eq("id", session.id);
+  return session as Session;
 }
 
-// ---- Handlers ----
+function parseBoundedInt(raw: string | null, fallback: number, min: number, max: number): number {
+  const parsed = Number.parseInt(raw ?? "", 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+}
 
-async function handleGetEvent(session: Session, db: ReturnType<typeof createClient>): Promise<Response> {
-  const { data } = await db
+async function getControlMode(db: DbClient, eventId: string): Promise<"semi_open" | "controlled" | null> {
+  const { data } = await db.from("events").select("control_mode").eq("id", eventId).maybeSingle();
+  return data?.control_mode ?? null;
+}
+
+async function handleGetEvent(req: Request, session: Session, db: DbClient): Promise<Response> {
+  const { data, error } = await db
     .from("events")
-    .select("id, slug, name, event_date, control_mode, status, url, created_at")
+    .select("id, slug, name, event_date, control_mode, status, public_invitation_url, created_at")
     .eq("id", session.event_id)
-    .single();
-  return data ? json(data) : err("Evento no encontrado.", 404);
+    .maybeSingle();
+
+  if (error || !data) return fail(req, "Evento no encontrado.", 404);
+  return json(req, {
+    id: data.id,
+    slug: data.slug,
+    name: data.name,
+    event_date: data.event_date,
+    control_mode: data.control_mode,
+    status: data.status,
+    url: data.public_invitation_url,
+    created_at: data.created_at,
+  });
 }
 
-async function handleGetSummary(session: Session, db: ReturnType<typeof createClient>): Promise<Response> {
-  const { event_id } = session;
+async function handleGetSummary(req: Request, session: Session, db: DbClient): Promise<Response> {
+  const mode = await getControlMode(db, session.event_id);
+  if (!mode) return fail(req, "Evento no encontrado.", 404);
 
-  const { data: ev } = await db.from("events").select("control_mode").eq("id", event_id).single();
-  const mode = ev?.control_mode ?? "semi_open";
-
-  if (mode === "semi_open") {
-    const { data: responses } = await db
-      .from("responses")
-      .select("status, attendee_count, submitted_at")
-      .eq("event_id", event_id);
-
-    const total_responses = responses?.length ?? 0;
-    const confirmed_people = responses?.filter(r => r.status === "confirmed").reduce((a, r) => a + (r.attendee_count || 1), 0) ?? 0;
-    const declined_people = responses?.filter(r => r.status === "declined").reduce((a, r) => a + (r.attendee_count || 1), 0) ?? 0;
-    const pending_people = responses?.filter(r => r.status === "pending").reduce((a, r) => a + (r.attendee_count || 1), 0) ?? 0;
-    const sorted = [...(responses ?? [])].sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
-    const last_response_at = sorted[0]?.submitted_at ?? null;
-
-    const { data: si } = await db.from("sheet_integrations").select("last_sync_at").eq("event_id", event_id).single();
-
-    return json({ total_responses, confirmed_people, declined_people, pending_people, last_response_at, last_sync_at: si?.last_sync_at ?? null });
-  } else {
-    // controlled mode
-    const { data: guests } = await db
+  if (mode === "controlled") {
+    const { data: guests, error } = await db
       .from("guests")
       .select("status, allowed_passes, confirmed_passes")
-      .eq("event_id", event_id);
+      .eq("event_id", session.event_id);
+    if (error) return fail(req, "No fue posible cargar el resumen.", 500);
 
-    const total_guests = guests?.length ?? 0;
-    const total_allowed_passes = guests?.reduce((a, g) => a + g.allowed_passes, 0) ?? 0;
-    const total_confirmed_passes = guests?.reduce((a, g) => a + g.confirmed_passes, 0) ?? 0;
-    const total_pending_guests = guests?.filter(g => g.status === "pending").length ?? 0;
-
-    return json({ total_responses: 0, confirmed_people: 0, declined_people: 0, pending_people: 0, last_response_at: null, last_sync_at: null, total_guests, total_allowed_passes, total_confirmed_passes, total_pending_guests });
+    return json(req, {
+      total_responses: 0,
+      confirmed_people: 0,
+      declined_people: 0,
+      pending_people: 0,
+      last_response_at: null,
+      last_sync_at: null,
+      total_guests: guests?.length ?? 0,
+      total_allowed_passes: (guests ?? []).reduce((sum, guest) => sum + Number(guest.allowed_passes || 0), 0),
+      total_confirmed_passes: (guests ?? []).reduce((sum, guest) => sum + Number(guest.confirmed_passes || 0), 0),
+      total_pending_guests: (guests ?? []).filter((guest) => guest.status === "pending").length,
+    });
   }
+
+  const { data: responses, error } = await db
+    .from("responses")
+    .select("status, attendee_count, submitted_at")
+    .eq("event_id", session.event_id);
+  if (error) return fail(req, "No fue posible cargar el resumen.", 500);
+
+  const rows = responses ?? [];
+  const confirmed = rows.filter((row) => row.status === "confirmed");
+  const declined = rows.filter((row) => row.status === "declined");
+  const pending = rows.filter((row) => row.status === "pending");
+  const sorted = [...rows].sort((a, b) => Date.parse(b.submitted_at) - Date.parse(a.submitted_at));
+
+  const { data: integration } = await db
+    .from("sheet_integrations")
+    .select("last_sync_at")
+    .eq("event_id", session.event_id)
+    .maybeSingle();
+
+  return json(req, {
+    total_responses: rows.length,
+    confirmed_people: confirmed.reduce((sum, row) => sum + Number(row.attendee_count || 0), 0),
+    declined_people: declined.length,
+    pending_people: pending.length,
+    last_response_at: sorted[0]?.submitted_at ?? null,
+    last_sync_at: integration?.last_sync_at ?? null,
+  });
 }
 
-async function handleGetResponses(req: Request, session: Session, db: ReturnType<typeof createClient>): Promise<Response> {
+async function handleGetResponses(req: Request, session: Session, db: DbClient): Promise<Response> {
   const url = new URL(req.url);
-  const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1"));
-  const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") ?? "25")));
-  const status = url.searchParams.get("status") ?? "";
-  const search = url.searchParams.get("search") ?? "";
+  const page = parseBoundedInt(url.searchParams.get("page"), 1, 1, 100000);
+  const limit = parseBoundedInt(url.searchParams.get("limit"), 25, 1, 100);
+  const status = url.searchParams.get("status")?.trim() ?? "";
+  const search = url.searchParams.get("search")?.trim() ?? "";
   const offset = (page - 1) * limit;
 
-  let query = db.from("responses").select("*", { count: "exact" }).eq("event_id", session.event_id).order("submitted_at", { ascending: false });
-  if (status) query = query.eq("status", status);
+  let query = db
+    .from("responses")
+    .select("*", { count: "exact" })
+    .eq("event_id", session.event_id)
+    .order("submitted_at", { ascending: false });
+
+  if (["pending", "confirmed", "declined"].includes(status)) query = query.eq("status", status);
   if (search) query = query.ilike("respondent_name", `%${search}%`);
   query = query.range(offset, offset + limit - 1);
 
-  const { data: responses, count } = await query;
-  return json({ responses: responses ?? [], total: count ?? 0 });
+  const { data, count, error } = await query;
+  if (error) return fail(req, "No fue posible cargar las confirmaciones.", 500);
+  return json(req, { responses: data ?? [], total: count ?? 0 });
 }
 
-async function handleGetGuests(req: Request, session: Session, db: ReturnType<typeof createClient>): Promise<Response> {
+async function handleGetGuests(req: Request, session: Session, db: DbClient): Promise<Response> {
   const url = new URL(req.url);
-  const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1"));
-  const limit = Math.min(100, parseInt(url.searchParams.get("limit") ?? "25"));
-  const status = url.searchParams.get("status") ?? "";
-  const search = url.searchParams.get("search") ?? "";
+  const page = parseBoundedInt(url.searchParams.get("page"), 1, 1, 100000);
+  const limit = parseBoundedInt(url.searchParams.get("limit"), 25, 1, 100);
+  const status = url.searchParams.get("status")?.trim() ?? "";
+  const search = url.searchParams.get("search")?.trim() ?? "";
   const offset = (page - 1) * limit;
 
-  let query = db.from("guests").select("*", { count: "exact" }).eq("event_id", session.event_id).order("name");
-  if (status) query = query.eq("status", status);
+  let query = db
+    .from("guests")
+    .select("*", { count: "exact" })
+    .eq("event_id", session.event_id)
+    .order("name", { ascending: true });
+
+  if (["pending", "confirmed", "declined"].includes(status)) query = query.eq("status", status);
   if (search) query = query.ilike("name", `%${search}%`);
   query = query.range(offset, offset + limit - 1);
 
-  const { data: guests, count } = await query;
-  return json({ guests: guests ?? [], total: count ?? 0 });
+  const { data, count, error } = await query;
+  if (error) return fail(req, "No fue posible cargar los invitados.", 500);
+  return json(req, { guests: data ?? [], total: count ?? 0 });
 }
 
-async function handleCreateGuest(req: Request, session: Session, db: ReturnType<typeof createClient>): Promise<Response> {
-  const body = await req.json().catch(() => null);
-  if (!body?.name) return err("El nombre es requerido.");
-  if (!body.allowed_passes || body.allowed_passes < 1) return err("Debe tener al menos 1 pase.");
+async function handleCreateGuest(req: Request, session: Session, db: DbClient): Promise<Response> {
+  if (await getControlMode(db, session.event_id) !== "controlled") {
+    return fail(req, "La lista controlada no está habilitada para este evento.", 409);
+  }
 
-  const { data, error: dbErr } = await db.from("guests").insert({
+  const body = await req.json().catch(() => null) as Record<string, unknown> | null;
+  const name = typeof body?.name === "string" ? body.name.trim() : "";
+  const allowedPasses = Number(body?.allowed_passes);
+  if (!name) return fail(req, "El nombre es requerido.");
+  if (!Number.isInteger(allowedPasses) || allowedPasses < 1) return fail(req, "Debe tener al menos 1 pase.");
+
+  const { data, error } = await db.from("guests").insert({
     event_id: session.event_id,
-    name: String(body.name).trim(),
-    phone: body.phone ? String(body.phone).trim() : null,
-    allowed_passes: Number(body.allowed_passes),
+    name,
+    phone: typeof body?.phone === "string" && body.phone.trim() ? body.phone.trim() : null,
+    allowed_passes: allowedPasses,
     confirmed_passes: 0,
     status: "pending",
-    notes: body.notes ? String(body.notes).trim() : null,
+    notes: typeof body?.notes === "string" && body.notes.trim() ? body.notes.trim() : null,
   }).select().single();
 
-  if (dbErr) return err(dbErr.message);
-  return json(data, 201);
+  if (error) {
+    console.error("panel-api create guest failed", error.message);
+    return fail(req, "No fue posible guardar el invitado.", 500);
+  }
+  return json(req, data, 201);
 }
 
-async function handleUpdateGuest(guestId: string, req: Request, session: Session, db: ReturnType<typeof createClient>): Promise<Response> {
-  const body = await req.json().catch(() => null);
-  if (!body) return err("Body requerido.");
+async function handleUpdateGuest(req: Request, guestId: string, session: Session, db: DbClient): Promise<Response> {
+  if (await getControlMode(db, session.event_id) !== "controlled") {
+    return fail(req, "La lista controlada no está habilitada para este evento.", 409);
+  }
 
-  // Verify guest belongs to this event (event isolation)
-  const { data: existing } = await db.from("guests").select("id, allowed_passes, confirmed_passes").eq("id", guestId).eq("event_id", session.event_id).single();
-  if (!existing) return err("Invitado no encontrado.", 404);
+  const body = await req.json().catch(() => null) as Record<string, unknown> | null;
+  if (!body) return fail(req, "Datos inválidos.");
+
+  const { data: existing } = await db
+    .from("guests")
+    .select("id, allowed_passes, confirmed_passes, status")
+    .eq("id", guestId)
+    .eq("event_id", session.event_id)
+    .maybeSingle();
+  if (!existing) return fail(req, "Invitado no encontrado.", 404);
 
   const updates: Record<string, unknown> = {};
-  if (body.name) updates.name = String(body.name).trim();
-  if (body.phone !== undefined) updates.phone = body.phone ? String(body.phone).trim() : null;
-  if (body.notes !== undefined) updates.notes = body.notes ? String(body.notes).trim() : null;
-  if (body.status && ["pending", "confirmed", "declined"].includes(body.status)) updates.status = body.status;
-  if (body.allowed_passes !== undefined) {
-    const ap = Number(body.allowed_passes);
-    if (ap < 1) return err("No se permiten 0 pases.");
-    updates.allowed_passes = ap;
+  if (body.name !== undefined) {
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    if (!name) return fail(req, "El nombre es requerido.");
+    updates.name = name;
   }
-  if (body.confirmed_passes !== undefined) {
-    const cp = Number(body.confirmed_passes);
-    const ap = (updates.allowed_passes as number) ?? existing.allowed_passes;
-    if (cp > ap) return err(`Los pases confirmados (${cp}) no pueden superar los permitidos (${ap}).`);
-    updates.confirmed_passes = cp;
-  }
-  updates.updated_at = new Date().toISOString();
+  if (body.phone !== undefined) updates.phone = typeof body.phone === "string" && body.phone.trim() ? body.phone.trim() : null;
+  if (body.notes !== undefined) updates.notes = typeof body.notes === "string" && body.notes.trim() ? body.notes.trim() : null;
 
-  const { data, error: dbErr } = await db.from("guests").update(updates).eq("id", guestId).eq("event_id", session.event_id).select().single();
-  if (dbErr) return err(dbErr.message);
-  return json(data);
+  const nextAllowed = body.allowed_passes !== undefined ? Number(body.allowed_passes) : Number(existing.allowed_passes);
+  const nextConfirmed = body.confirmed_passes !== undefined ? Number(body.confirmed_passes) : Number(existing.confirmed_passes);
+  if (!Number.isInteger(nextAllowed) || nextAllowed < 1) return fail(req, "No se permiten 0 pases.");
+  if (!Number.isInteger(nextConfirmed) || nextConfirmed < 0) return fail(req, "Los pases confirmados no son válidos.");
+  if (nextConfirmed > nextAllowed) return fail(req, "Los pases confirmados no pueden superar los permitidos.");
+
+  if (body.allowed_passes !== undefined) updates.allowed_passes = nextAllowed;
+  if (body.confirmed_passes !== undefined) updates.confirmed_passes = nextConfirmed;
+
+  if (body.status !== undefined) {
+    const status = String(body.status);
+    if (!["pending", "confirmed", "declined"].includes(status)) return fail(req, "Estado de invitado inválido.");
+    updates.status = status;
+    if (status === "declined") updates.confirmed_passes = 0;
+  }
+
+  const { data, error } = await db
+    .from("guests")
+    .update(updates)
+    .eq("id", guestId)
+    .eq("event_id", session.event_id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("panel-api update guest failed", error.message);
+    return fail(req, "No fue posible actualizar el invitado.", 500);
+  }
+  return json(req, data);
 }
 
-async function handleGetIntegration(session: Session, db: ReturnType<typeof createClient>): Promise<Response> {
-  const { data } = await db.from("sheet_integrations").select("*").eq("event_id", session.event_id).single();
-  if (!data) return json(null);
+async function handleGetIntegration(req: Request, session: Session, db: DbClient): Promise<Response> {
+  const { data, error } = await db
+    .from("sheet_integrations")
+    .select("id, event_id, spreadsheet_id, sheet_name, form_url, enabled, field_mapping, last_sync_at, created_at")
+    .eq("event_id", session.event_id)
+    .maybeSingle();
 
-  // Add credentials_configured derived field (do not expose keys)
-  const credentialsConfigured = !!(GOOGLE_SA_EMAIL && GOOGLE_SA_KEY);
-  return json({ ...data, credentials_configured: credentialsConfigured });
+  if (error) return fail(req, "No fue posible cargar la integración.", 500);
+  if (!data) return json(req, null);
+  return json(req, { ...data, credentials_configured: Boolean(GOOGLE_SA_EMAIL && GOOGLE_SA_KEY) });
 }
 
-// ---- Google Sheets Sync ----
+function bytesToBase64Url(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function stringToBase64Url(value: string): string {
+  return bytesToBase64Url(new TextEncoder().encode(value));
+}
 
 async function getGoogleAccessToken(): Promise<string | null> {
   if (!GOOGLE_SA_EMAIL || !GOOGLE_SA_KEY) return null;
   try {
     const now = Math.floor(Date.now() / 1000);
-    const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-    const payload = btoa(JSON.stringify({
+    const header = stringToBase64Url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
+    const payload = stringToBase64Url(JSON.stringify({
       iss: GOOGLE_SA_EMAIL,
       scope: "https://www.googleapis.com/auth/spreadsheets.readonly",
       aud: "https://oauth2.googleapis.com/token",
@@ -252,221 +351,380 @@ async function getGoogleAccessToken(): Promise<string | null> {
       exp: now + 3600,
     }));
 
-    const key = GOOGLE_SA_KEY
+    const pemBody = GOOGLE_SA_KEY
       .replace(/\\n/g, "\n")
       .replace("-----BEGIN PRIVATE KEY-----", "")
       .replace("-----END PRIVATE KEY-----", "")
       .replace(/\s/g, "");
-
-    const keyData = Uint8Array.from(atob(key), c => c.charCodeAt(0));
-    const cryptoKey = await crypto.subtle.importKey(
-      "pkcs8", keyData.buffer,
+    const keyBytes = Uint8Array.from(atob(pemBody), (c) => c.charCodeAt(0));
+    const key = await crypto.subtle.importKey(
+      "pkcs8",
+      keyBytes,
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-      false, ["sign"]
+      false,
+      ["sign"],
     );
 
     const signingInput = `${header}.${payload}`;
-    const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", cryptoKey, new TextEncoder().encode(signingInput));
-    const sig = btoa(String.fromCharCode(...new Uint8Array(signature)));
-    const jwt = `${signingInput}.${sig}`;
+    const signature = await crypto.subtle.sign(
+      "RSASSA-PKCS1-v1_5",
+      key,
+      new TextEncoder().encode(signingInput),
+    );
+    const jwt = `${signingInput}.${bytesToBase64Url(new Uint8Array(signature))}`;
 
-    const res = await fetch("https://oauth2.googleapis.com/token", {
+    const response = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
+      body: new URLSearchParams({
+        grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+        assertion: jwt,
+      }),
     });
-    const data = await res.json();
-    return data.access_token ?? null;
-  } catch {
+    const payloadJson = await response.json() as { access_token?: string };
+    return response.ok ? payloadJson.access_token ?? null : null;
+  } catch (error) {
+    console.error("panel-api Google token error", error);
     return null;
   }
 }
 
-function normalizeStatus(rawValue: string | undefined): "confirmed" | "declined" | "error" {
-  if (!rawValue) return "error";
-  const v = rawValue.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-  if (v.includes("confirmo") || v.includes("si") || v.includes("asistiré") || v.includes("asistire") || v.includes("confirmar")) return "confirmed";
-  if (v.includes("no") || v.includes("decline") || v.includes("no asis") || v.includes("no podré") || v.includes("no podre")) return "declined";
-  return "error";
+function canonicalText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
-async function handleSync(session: Session, db: ReturnType<typeof createClient>): Promise<Response> {
-  const startedAt = new Date().toISOString();
+function normalizeStatus(raw: string): "confirmed" | "declined" | "pending" {
+  const value = canonicalText(raw);
+  if (!value) return "pending";
 
-  // Get integration
-  const { data: integration } = await db
-    .from("sheet_integrations")
-    .select("*")
-    .eq("event_id", session.event_id)
-    .single();
+  if (
+    /^no\b/.test(value) ||
+    value.includes("no podre asistir") ||
+    value.includes("no asistire") ||
+    value.includes("no puedo asistir")
+  ) return "declined";
 
-  if (!integration) {
-    return err("No hay integración de Google Sheets configurada.", 404);
+  if (
+    /^si\b/.test(value) ||
+    value.includes("confirmo mi asistencia") ||
+    value.includes("confirmo asistencia") ||
+    value === "confirmo" ||
+    value.includes("asistire")
+  ) return "confirmed";
+
+  return "pending";
+}
+
+function parseSheetTimestamp(raw: string): string | null {
+  const value = raw.trim();
+  if (!value) return null;
+
+  const isoLike = /^\d{4}-\d{2}-\d{2}/.test(value);
+  if (isoLike) {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
   }
 
-  // Check credentials
+  const match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(value);
+  if (match) {
+    const [, dayRaw, monthRaw, year, hourRaw = "0", minute = "0", second = "0"] = match;
+    const day = Number(dayRaw);
+    const month = Number(monthRaw);
+    const hour = Number(hourRaw);
+    if (day < 1 || day > 31 || month < 1 || month > 12 || hour > 23) return null;
+    const candidate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${minute}:${second}-06:00`;
+    const parsed = new Date(candidate);
+    return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+function parseAttendeeCount(raw: string, status: "confirmed" | "declined" | "pending"): number | null {
+  if (status === "declined" || status === "pending") return 0;
+  const match = raw.match(/\d+/);
+  if (!match) return null;
+  const count = Number(match[0]);
+  return Number.isInteger(count) && count >= 1 && count <= 100 ? count : null;
+}
+
+function parseAttendeeNames(raw: string): string[] {
+  return raw
+    .split(/[\n,;]+/)
+    .map((name) => name.trim())
+    .filter(Boolean);
+}
+
+function rawRowObject(headers: string[], row: string[]): Record<string, string> {
+  const result: Record<string, string> = {};
+  headers.forEach((header, index) => {
+    if (header) result[header] = row[index] ?? "";
+  });
+  return result;
+}
+
+async function createSyncLog(db: DbClient, eventId: string, integrationId: string, startedAt: string): Promise<string | null> {
+  const { data } = await db.from("sync_logs").insert({
+    event_id: eventId,
+    integration_id: integrationId,
+    status: "running",
+    started_at: startedAt,
+  }).select("id").single();
+  return data?.id ?? null;
+}
+
+async function finishSyncLog(
+  db: DbClient,
+  logId: string | null,
+  counters: SyncCounters,
+  status: "success" | "partial" | "failed",
+  finishedAt: string,
+  errorMessage?: string,
+): Promise<void> {
+  if (!logId) return;
+  await db.from("sync_logs").update({
+    imported_count: counters.imported,
+    updated_count: counters.updated,
+    skipped_count: counters.skipped,
+    error_count: counters.errors,
+    status,
+    finished_at: finishedAt,
+    error_message: errorMessage ?? null,
+  }).eq("id", logId);
+}
+
+async function handleSync(req: Request, session: Session, db: DbClient): Promise<Response> {
+  if (await getControlMode(db, session.event_id) !== "semi_open") {
+    return fail(req, "La sincronización de Google Sheets solo aplica a eventos semiabiertos.", 409);
+  }
+
+  const startedAt = new Date().toISOString();
+  const counters: SyncCounters = { imported: 0, updated: 0, skipped: 0, errors: 0 };
+
+  const { data: integration, error: integrationError } = await db
+    .from("sheet_integrations")
+    .select("id, spreadsheet_id, sheet_name, enabled, field_mapping")
+    .eq("event_id", session.event_id)
+    .maybeSingle();
+
+  if (integrationError || !integration || !integration.enabled || !integration.spreadsheet_id) {
+    return fail(req, "No hay una integración de Google Sheets activa.", 404);
+  }
+
+  const logId = await createSyncLog(db, session.event_id, integration.id, startedAt);
+
   if (!GOOGLE_SA_EMAIL || !GOOGLE_SA_KEY) {
-    return json({
-      ok: false,
-      imported_count: 0, updated_count: 0, skipped_count: 0, error_count: 0,
+    const finishedAt = new Date().toISOString();
+    await finishSyncLog(db, logId, counters, "failed", finishedAt, "Credenciales de Google no configuradas.");
+    return json(req, {
+      imported_count: 0,
+      updated_count: 0,
+      skipped_count: 0,
+      error_count: 0,
       status: "error",
-      message: "Google Sheets pendiente de conexión. Configura las credenciales del service account.",
+      message: "Google Sheets pendiente de conexión.",
       started_at: startedAt,
-      finished_at: new Date().toISOString(),
+      finished_at: finishedAt,
     });
   }
 
   const accessToken = await getGoogleAccessToken();
   if (!accessToken) {
-    await db.from("sync_logs").insert({
-      event_id: session.event_id,
-      imported_count: 0, updated_count: 0, skipped_count: 0, error_count: 1,
-      status: "error",
-      error_message: "No se pudo obtener token de Google.",
-      started_at: startedAt,
-      finished_at: new Date().toISOString(),
-    });
-    return err("Error de autenticación con Google Sheets.", 500);
+    counters.errors = 1;
+    const finishedAt = new Date().toISOString();
+    await finishSyncLog(db, logId, counters, "failed", finishedAt, "No se pudo autenticar con Google.");
+    return fail(req, "No fue posible conectar con Google Sheets.", 502);
   }
 
-  // Fetch sheet data
-  const spreadsheetId = integration.spreadsheet_id;
-  const sheetName = integration.sheet_name;
-  const range = `${encodeURIComponent(sheetName)}!A:H`;
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`;
+  const range = `${integration.sheet_name}!A:Z`;
+  const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(integration.spreadsheet_id)}/values/${encodeURIComponent(range)}?majorDimension=ROWS&valueRenderOption=FORMATTED_VALUE`;
+  const sheetResponse = await fetch(sheetsUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
 
-  const sheetsRes = await fetch(url, { headers: { "Authorization": `Bearer ${accessToken}` } });
-  if (!sheetsRes.ok) {
-    return err("Error al acceder a Google Sheets.", 500);
-  }
-  const sheetsData = await sheetsRes.json();
-  const rows: string[][] = sheetsData.values ?? [];
-
-  if (rows.length <= 1) {
-    // Only header or empty
-    await db.from("sync_logs").insert({
-      event_id: session.event_id, imported_count: 0, updated_count: 0, skipped_count: 0, error_count: 0,
-      status: "success", started_at: startedAt, finished_at: new Date().toISOString(),
-    });
-    await db.from("sheet_integrations").update({ last_sync_at: new Date().toISOString() }).eq("id", integration.id);
-    return json({ ok: true, imported_count: 0, updated_count: 0, skipped_count: 0, error_count: 0, status: "success", message: "Sin respuestas nuevas.", started_at: startedAt, finished_at: new Date().toISOString() });
+  if (!sheetResponse.ok) {
+    counters.errors = 1;
+    const finishedAt = new Date().toISOString();
+    await finishSyncLog(db, logId, counters, "failed", finishedAt, `Google Sheets HTTP ${sheetResponse.status}`);
+    return fail(req, "No fue posible leer la hoja de confirmaciones.", 502);
   }
 
-  const dataRows = rows.slice(1); // Skip header
-  let imported = 0, updated = 0, skipped = 0, errorCount = 0;
+  const sheetPayload = await sheetResponse.json() as { values?: unknown[][] };
+  const rows = (sheetPayload.values ?? []).map((row) => row.map((value) => String(value ?? "")));
+  const headers = rows[0] ?? [];
+  const mapping = (integration.field_mapping ?? {}) as Record<string, string>;
 
-  for (const row of dataRows) {
-    const [timestamp, nombre, asistencia, cuantos, nombres, whatsapp, mensaje] = row;
-    if (!timestamp || !nombre) { skipped++; continue; }
+  const headerIndex = (logicalName: string): number => {
+    const expected = String(mapping[logicalName] ?? "").trim();
+    return expected ? headers.findIndex((header) => header.trim() === expected) : -1;
+  };
 
-    // Deterministic external_response_id: sha256(timestamp + nombre)
-    const externalId = await sha256hex(`${timestamp}::${nombre}`);
+  const indexes = {
+    timestamp: headerIndex("timestamp"),
+    respondentName: headerIndex("respondent_name"),
+    status: headerIndex("attendance_status"),
+    attendeeCount: headerIndex("attendee_count"),
+    attendeeNames: headerIndex("attendee_names"),
+    phone: headerIndex("phone"),
+    message: headerIndex("message"),
+  };
 
-    // Parse values
-    const statusResult = normalizeStatus(asistencia);
-    const attendeeCount = parseInt(cuantos ?? "1") || 1;
-    const submittedAt = new Date(timestamp).toISOString();
+  if (indexes.timestamp < 0 || indexes.respondentName < 0 || indexes.status < 0) {
+    counters.errors = 1;
+    const finishedAt = new Date().toISOString();
+    await finishSyncLog(db, logId, counters, "failed", finishedAt, "El mapeo de columnas ya no coincide con la hoja.");
+    return fail(req, "La estructura de Google Sheets cambió y necesita revisión.", 409);
+  }
 
-    const rawData = { timestamp, nombre, asistencia, cuantos, nombres, whatsapp, mensaje };
+  for (let rowNumber = 1; rowNumber < rows.length; rowNumber++) {
+    const row = rows[rowNumber];
+    const timestampRaw = row[indexes.timestamp]?.trim() ?? "";
+    const respondentName = row[indexes.respondentName]?.trim() ?? "";
+    const statusRaw = row[indexes.status]?.trim() ?? "";
+    const phone = indexes.phone >= 0 ? row[indexes.phone]?.trim() ?? "" : "";
+    const message = indexes.message >= 0 ? row[indexes.message]?.trim() ?? "" : "";
+    const countRaw = indexes.attendeeCount >= 0 ? row[indexes.attendeeCount]?.trim() ?? "" : "";
+    const namesRaw = indexes.attendeeNames >= 0 ? row[indexes.attendeeNames]?.trim() ?? "" : "";
 
-    // Check if already exists (idempotent)
-    const { data: existing } = await db
-      .from("responses")
-      .select("id")
-      .eq("event_id", session.event_id)
-      .eq("external_response_id", externalId)
-      .single();
-
-    if (existing) {
-      skipped++;
+    if (!timestampRaw && !respondentName && !statusRaw) {
+      counters.skipped++;
       continue;
     }
 
-    if (statusResult === "error") {
-      // Save with raw data but log mapping error
-      await db.from("responses").insert({
-        event_id: session.event_id,
-        respondent_name: nombre.trim(),
-        phone: whatsapp?.trim() || null,
-        status: "pending",
-        attendee_count: attendeeCount,
-        attendee_names: nombres?.trim() || null,
-        message: mensaje?.trim() || null,
-        source: "google_forms",
-        submitted_at: submittedAt,
-        external_response_id: externalId,
-        raw_data: rawData,
-      });
-      errorCount++;
-    } else {
-      await db.from("responses").insert({
-        event_id: session.event_id,
-        respondent_name: nombre.trim(),
-        phone: whatsapp?.trim() || null,
-        status: statusResult,
-        attendee_count: attendeeCount,
-        attendee_names: nombres?.trim() || null,
-        message: mensaje?.trim() || null,
-        source: "google_forms",
-        submitted_at: submittedAt,
-        external_response_id: externalId,
-        raw_data: rawData,
-      });
-      imported++;
+    const submittedAt = parseSheetTimestamp(timestampRaw);
+    const status = normalizeStatus(statusRaw);
+    const attendeeCount = parseAttendeeCount(countRaw, status);
+    if (!timestampRaw || !respondentName || !submittedAt || attendeeCount === null) {
+      counters.errors++;
+      continue;
     }
+
+    const externalResponseId = await sha256hex(`${timestampRaw.trim()}::${canonicalText(respondentName)}::${canonicalText(phone)}`);
+    const rawData = rawRowObject(headers, row);
+    const fingerprint = await sha256hex(JSON.stringify(rawData));
+    const storedRawData = { ...rawData, _sync_fingerprint: fingerprint };
+
+    const responseRecord = {
+      event_id: session.event_id,
+      respondent_name: respondentName,
+      phone: phone || null,
+      status,
+      attendee_count: attendeeCount,
+      attendee_names: status === "confirmed" ? parseAttendeeNames(namesRaw) : [],
+      message: message || null,
+      source: "google_forms",
+      submitted_at: submittedAt,
+      external_response_id: externalResponseId,
+      raw_data: storedRawData,
+    };
+
+    const { data: existing, error: lookupError } = await db
+      .from("responses")
+      .select("id, raw_data")
+      .eq("event_id", session.event_id)
+      .eq("source", "google_forms")
+      .eq("external_response_id", externalResponseId)
+      .maybeSingle();
+
+    if (lookupError) {
+      counters.errors++;
+      continue;
+    }
+
+    if (existing) {
+      const existingFingerprint = (existing.raw_data as Record<string, unknown> | null)?._sync_fingerprint;
+      if (existingFingerprint === fingerprint) {
+        counters.skipped++;
+        continue;
+      }
+      const { error: updateError } = await db
+        .from("responses")
+        .update(responseRecord)
+        .eq("id", existing.id)
+        .eq("event_id", session.event_id);
+      if (updateError) counters.errors++;
+      else counters.updated++;
+      continue;
+    }
+
+    const { error: insertError } = await db.from("responses").insert(responseRecord);
+    if (insertError) counters.errors++;
+    else counters.imported++;
   }
 
   const finishedAt = new Date().toISOString();
-  await db.from("sync_logs").insert({
-    event_id: session.event_id,
-    imported_count: imported, updated_count: updated, skipped_count: skipped, error_count: errorCount,
-    status: "success", started_at: startedAt, finished_at: finishedAt,
-  });
+  const successfulChanges = counters.imported + counters.updated;
+  const logStatus: "success" | "partial" | "failed" = counters.errors === 0
+    ? "success"
+    : successfulChanges > 0
+      ? "partial"
+      : "failed";
+
+  await finishSyncLog(db, logId, counters, logStatus, finishedAt, counters.errors ? "Una o más filas no pudieron mapearse o guardarse." : undefined);
   await db.from("sheet_integrations").update({ last_sync_at: finishedAt }).eq("id", integration.id);
 
-  const totalNew = imported + errorCount;
-  const message = totalNew > 0
-    ? `${imported} nueva${imported !== 1 ? "s" : ""} respuesta${imported !== 1 ? "s" : ""} importada${imported !== 1 ? "s" : ""}.${errorCount > 0 ? ` ${errorCount} con estado desconocido.` : ""}`
-    : "Sin respuestas nuevas.";
+  const message = counters.errors > 0
+    ? `${counters.imported} nuevas, ${counters.updated} actualizadas y ${counters.errors} con datos por revisar.`
+    : successfulChanges > 0
+      ? `${counters.imported} nuevas y ${counters.updated} actualizadas.`
+      : "Sin respuestas nuevas.";
 
-  return json({ ok: true, imported_count: imported, updated_count: updated, skipped_count: skipped, error_count: errorCount, status: "success", message, started_at: startedAt, finished_at: finishedAt });
+  return json(req, {
+    imported_count: counters.imported,
+    updated_count: counters.updated,
+    skipped_count: counters.skipped,
+    error_count: counters.errors,
+    status: logStatus,
+    message,
+    started_at: startedAt,
+    finished_at: finishedAt,
+  });
 }
 
-async function handleExport(session: Session, db: ReturnType<typeof createClient>): Promise<Response> {
-  const { data: responses } = await db
+async function handleExport(req: Request, session: Session, db: DbClient): Promise<Response> {
+  const { data, error } = await db
     .from("responses")
     .select("*")
     .eq("event_id", session.event_id)
     .order("submitted_at", { ascending: false });
-  return json({ responses: responses ?? [] });
+  if (error) return fail(req, "No fue posible preparar la exportación.", 500);
+  return json(req, { responses: data ?? [] });
 }
 
-// ---- Dispatcher ----
 Deno.serve(async (req: Request) => {
-  currentOrigin = req.headers.get("origin") ?? "https://invitaciones-access.smartbrain.lat";`n  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(currentOrigin) });
+  const origin = req.headers.get("origin");
+  if (origin && !isAllowedOrigin(origin)) return fail(req, "Origen no permitido.", 403);
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
 
-  const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-  const session = await resolveSession(req, db);
-
-  if (!session) return err("Sesión inválida o expirada.", 401, "SESSION_EXPIRED");
-
-  const url = new URL(req.url);
-  const path = url.pathname.replace(/\/functions\/v1\/panel-api/, "").replace(/\/$/, "");
-  const guestMatch = path.match(/^\/guests\/([a-z0-9-]+)$/);
+  const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
   try {
-    if (req.method === "GET" && path === "/event") return await handleGetEvent(session, db);
-    if (req.method === "GET" && path === "/summary") return await handleGetSummary(session, db);
+    const session = await resolveSession(req, db);
+    if (!session) return fail(req, "Sesión inválida o expirada.", 401, "SESSION_EXPIRED");
+
+    const url = new URL(req.url);
+    const path = url.pathname.replace(/^\/functions\/v1\/panel-api/, "").replace(/\/$/, "") || "/";
+    const guestMatch = /^\/guests\/([0-9a-f-]{36})$/i.exec(path);
+
+    if (req.method === "GET" && path === "/event") return await handleGetEvent(req, session, db);
+    if (req.method === "GET" && path === "/summary") return await handleGetSummary(req, session, db);
     if (req.method === "GET" && path === "/responses") return await handleGetResponses(req, session, db);
     if (req.method === "GET" && path === "/guests") return await handleGetGuests(req, session, db);
     if (req.method === "POST" && path === "/guests") return await handleCreateGuest(req, session, db);
-    if (req.method === "PUT" && guestMatch) return await handleUpdateGuest(guestMatch[1], req, session, db);
-    if (req.method === "GET" && path === "/integration") return await handleGetIntegration(session, db);
-    if (req.method === "POST" && path === "/sync") return await handleSync(session, db);
-    if (req.method === "GET" && path === "/export") return await handleExport(session, db);
-    return err("Not found", 404);
-  } catch (e) {
-    console.error("panel-api error:", e);
-    return err("Error interno del servidor.", 500);
+    if (req.method === "PUT" && guestMatch) return await handleUpdateGuest(req, guestMatch[1], session, db);
+    if (req.method === "GET" && path === "/integration") return await handleGetIntegration(req, session, db);
+    if (req.method === "POST" && path === "/sync") return await handleSync(req, session, db);
+    if (req.method === "GET" && path === "/export") return await handleExport(req, session, db);
+    return fail(req, "Not found", 404);
+  } catch (error) {
+    console.error("panel-api unhandled error", error);
+    return fail(req, "Error interno del servidor.", 500);
   }
 });
