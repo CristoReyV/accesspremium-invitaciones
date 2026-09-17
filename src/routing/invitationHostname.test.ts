@@ -47,4 +47,13 @@ describe("hostname", () => {
     expect(getRoutingHostname("localhost", query, false)).toBe("localhost");
     expect(getRoutingHostname(INVITATION_DOMAIN, query, true)).toBe(INVITATION_DOMAIN);
   });
+  it("reserva panel y nunca lo resuelve como invitacion", () => {
+    expect(resolveInvitationHostname("panel." + INVITATION_DOMAIN, registry)).toEqual({ kind: "panel" });
+    expect(resolveInvitationHostname("panel.localhost", registry)).toEqual({ kind: "panel" });
+    expect(resolveInvitationHostname("panel." + INVITATION_DOMAIN, registry)).not.toMatchObject({ kind: "invitation" });
+  });
+  it("bloquea slugs reservados como admin o api", () => {
+    expect(resolveInvitationHostname("admin." + INVITATION_DOMAIN, registry)).toEqual({ kind: "missing" });
+    expect(resolveInvitationHostname("api." + INVITATION_DOMAIN, registry)).toEqual({ kind: "missing" });
+  });
 });

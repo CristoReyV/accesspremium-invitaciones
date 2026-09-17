@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // Supabase Edge Function: panel-api
 // All endpoints require a valid panel session token.
 // Event isolation enforced: session.event_id is always used.
@@ -22,16 +22,36 @@ const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GOOGLE_SA_EMAIL = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
 const GOOGLE_SA_KEY = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY");
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
-};
+let currentOrigin = "https://invitaciones-access.smartbrain.lat";
+
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  try {
+    const url = new URL(origin);
+    const host = url.hostname.toLowerCase();
+    if (host === "invitaciones-access.smartbrain.lat" || host.endsWith(".invitaciones-access.smartbrain.lat")) return true;
+    if (host === "invitaciones-access.netlify.app" || host.endsWith("--invitaciones-access.netlify.app")) return true;
+    if (host === "localhost" || host === "127.0.0.1") return true;
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const allowed = isAllowedOrigin(origin);
+  return {
+    "Access-Control-Allow-Origin": allowed && origin ? origin : "https://invitaciones-access.smartbrain.lat",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+    "Vary": "Origin",
+  };
+}
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(currentOrigin), "Content-Type": "application/json" },
   });
 }
 
@@ -423,7 +443,7 @@ async function handleExport(session: Session, db: ReturnType<typeof createClient
 
 // ---- Dispatcher ----
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  currentOrigin = req.headers.get("origin") ?? "https://invitaciones-access.smartbrain.lat";`n  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(currentOrigin) });
 
   const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
   const session = await resolveSession(req, db);

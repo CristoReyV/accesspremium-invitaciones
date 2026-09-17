@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // Supabase Edge Function: panel-auth
 // Handles: POST /login, POST /logout, GET /validate-session
 //
@@ -9,6 +9,7 @@
 // - Session stored as SHA-256 hash in panel_sessions
 // - 12h session expiry
 // - Event isolation: session is bound to a single event_id
+// - Strict CORS restricted to AccessPremium domains
 // ============================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -22,21 +23,46 @@ const MAX_ATTEMPTS = 5;
 const WINDOW_MINUTES = 15;
 const SESSION_HOURS = 12;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-};
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  try {
+    const url = new URL(origin);
+    const host = url.hostname.toLowerCase();
+    if (host === "invitaciones-access.smartbrain.lat" || host.endsWith(".invitaciones-access.smartbrain.lat")) return true;
+    if (host === "invitaciones-access.netlify.app" || host.endsWith("--invitaciones-access.netlify.app")) return true;
+    if (host === "localhost" || host === "127.0.0.1") return true;
+  } catch {
+    return false;
+  }
+  return false;
+}
 
-function json(data: unknown, status = 200): Response {
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin");
+  const allowed = isAllowedOrigin(origin);
+  return {
+    "Access-Control-Allow-Origin": allowed && origin ? origin : "https://invitaciones-access.smartbrain.lat",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+function json(data: unknown, status = 200, req?: Request): Response {
+  const headers = req ? getCorsHeaders(req) : {
+    "Access-Control-Allow-Origin": "https://invitaciones-access.smartbrain.lat",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Vary": "Origin",
+  };
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...headers, "Content-Type": "application/json" },
   });
 }
 
-function error(message: string, status = 400, code?: string): Response {
-  return json({ ok: false, error: message, ...(code && { code }) }, status);
+function error(message: string, status = 400, code?: string, req?: Request): Response {
+  return json({ ok: false, error: message, ...(code && { code }) }, status, req);
 }
 
 // ---- Crypto helpers ----
@@ -65,10 +91,7 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 // Parse scrypt hash: scrypt$N$r$p$salt$hash (all base64url or hex)
 async function verifyScrypt(code: string, storedHash: string): Promise<boolean> {
-  // Expected format from the DB: scrypt$16384$8$1$<salt-hex>$<hash-hex>
-  // Node.js crypto.scrypt format stored in DB
   const parts = storedHash.split("$");
-  // Support format: scrypt$N$r$p$salt$hash OR similar
   if (parts.length < 6 || parts[0] !== "scrypt") return false;
 
   try {
@@ -82,9 +105,6 @@ async function verifyScrypt(code: string, storedHash: string): Promise<boolean> 
     const expectedHash = hexToBytes(hashHex);
     const keyLength = expectedHash.length;
 
-    // Use SubtleCrypto PBKDF2 if scrypt unavailable, or use a JS scrypt polyfill
-    // Deno does not have native scrypt in SubtleCrypto.
-    // We'll use the scrypt from esm.sh
     const { scrypt } = await import("https://esm.sh/scrypt-js@3.0.1");
     const derived = await scrypt(
       new TextEncoder().encode(code),
@@ -119,10 +139,10 @@ async function hashIP(ip: string): Promise<string> {
 
 async function handleLogin(req: Request): Promise<Response> {
   const body = await req.json().catch(() => null);
-  if (!body?.code) return error("Código de acceso inválido.");
+  if (!body?.code) return error("Código de acceso inválido.", 400, undefined, req);
 
   const code: string = String(body.code).trim().toUpperCase();
-  if (!code || code.length < 4) return error("Código de acceso inválido.");
+  if (!code || code.length < 4) return error("Código de acceso inválido.", 400, undefined, req);
 
   const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
@@ -139,10 +159,10 @@ async function handleLogin(req: Request): Promise<Response> {
     .gte("attempted_at", windowStart);
 
   if ((count ?? 0) >= MAX_ATTEMPTS) {
-    return error("Demasiados intentos fallidos. Intenta de nuevo en 15 minutos.", 429);
+    return error("Demasiados intentos fallidos. Intenta de nuevo en 15 minutos.", 429, undefined, req);
   }
 
-  // Find access code (search all — no info leakage)
+  // Find access code (search all - no info leakage)
   const { data: codes } = await db
     .from("event_access_codes")
     .select("id, event_id, code_hash, is_active")
@@ -175,7 +195,7 @@ async function handleLogin(req: Request): Promise<Response> {
   });
 
   if (!matchedCode) {
-    return error("Código de acceso inválido.", 401);
+    return error("Código de acceso inválido.", 401, undefined, req);
   }
 
   // Get event info
@@ -185,7 +205,7 @@ async function handleLogin(req: Request): Promise<Response> {
     .eq("id", matchedCode.event_id)
     .single();
 
-  if (!event) return error("Evento no encontrado.", 404);
+  if (!event) return error("Evento no encontrado.", 404, undefined, req);
 
   // Create session
   const rawToken = generateToken();
@@ -206,25 +226,25 @@ async function handleLogin(req: Request): Promise<Response> {
     event_id: event.id,
     event_slug: event.slug,
     expires_at: expiresAt,
-  });
+  }, 200, req);
 }
 
 async function handleLogout(req: Request): Promise<Response> {
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.replace("Bearer ", "").trim();
-  if (!token) return json({ ok: true });
+  if (!token) return json({ ok: true }, 200, req);
 
   const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
   const tokenHash = await sha256hex(token);
   await db.from("panel_sessions").delete().eq("token_hash", tokenHash);
 
-  return json({ ok: true });
+  return json({ ok: true }, 200, req);
 }
 
 async function handleValidateSession(req: Request): Promise<Response> {
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.replace("Bearer ", "").trim();
-  if (!token) return json({ valid: false });
+  if (!token) return json({ valid: false }, 200, req);
 
   const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
   const tokenHash = await sha256hex(token);
@@ -235,10 +255,10 @@ async function handleValidateSession(req: Request): Promise<Response> {
     .eq("token_hash", tokenHash)
     .single();
 
-  if (!session) return json({ valid: false });
+  if (!session) return json({ valid: false }, 200, req);
   if (new Date(session.expires_at) < new Date()) {
     await db.from("panel_sessions").delete().eq("token_hash", tokenHash);
-    return json({ valid: false, code: "SESSION_EXPIRED" });
+    return json({ valid: false, code: "SESSION_EXPIRED" }, 200, req);
   }
 
   // Update last_used_at
@@ -251,12 +271,12 @@ async function handleValidateSession(req: Request): Promise<Response> {
     event_id: session.event_id,
     event_slug: event?.slug,
     expires_at: session.expires_at,
-  });
+  }, 200, req);
 }
 
 // ---- Main dispatcher ----
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const url = new URL(req.url);
   const path = url.pathname.replace(/\/functions\/v1\/panel-auth/, "").replace(/\/$/, "");
@@ -265,9 +285,9 @@ Deno.serve(async (req: Request) => {
     if (req.method === "POST" && path === "/login") return await handleLogin(req);
     if (req.method === "POST" && path === "/logout") return await handleLogout(req);
     if (req.method === "GET" && path === "/validate-session") return await handleValidateSession(req);
-    return error("Not found", 404);
+    return error("Not found", 404, undefined, req);
   } catch (e) {
     console.error("panel-auth error:", e);
-    return error("Error interno del servidor.", 500);
+    return error("Error interno del servidor.", 500, undefined, req);
   }
 });

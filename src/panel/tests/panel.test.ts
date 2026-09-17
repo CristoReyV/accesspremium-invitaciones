@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // ACCESSPREMIUM — Panel Tests
 // ============================================================
 
@@ -42,6 +42,37 @@ describe("panel hostname routing", () => {
   it("la landing principal sigue siendo standard", () => {
     const result = resolveInvitationHostname(INVITATION_DOMAIN, registry);
     expect(result.kind).toBe("standard");
+  });
+
+  it("reserva expresamente el slug panel para que NUNCA pueda resolverse como invitacion cliente", () => {
+    // Intento de inyectar una invitacion con slug 'panel' en el registro
+    const maliciousRegistry = createInvitationRegistry({
+      "/src/app/bodas/panel/page.tsx": load,
+      "/src/app/bodas/ayde-octavio/page.tsx": load,
+    });
+    // El registro debe descartar panel
+    expect(maliciousRegistry.bySlug.has("panel")).toBe(false);
+
+    // Cualquier host con slug panel debe resolverse como panel, jamas como invitacion
+    const resultSubdomain = resolveInvitationHostname(`panel.${INVITATION_DOMAIN}`, maliciousRegistry);
+    expect(resultSubdomain.kind).toBe("panel");
+    expect(resultSubdomain.kind).not.toBe("invitation");
+
+    const resultDirect = resolveInvitationHostname("panel.invitaciones-access.smartbrain.lat", maliciousRegistry);
+    expect(resultDirect.kind).toBe("panel");
+    expect(resultDirect.kind).not.toBe("invitation");
+  });
+
+  it("bloquea slugs reservados de sistema (admin, api, dashboard)", () => {
+    const registryWithReserved = createInvitationRegistry({
+      "/src/app/bodas/admin/page.tsx": load,
+      "/src/app/bodas/api/page.tsx": load,
+    });
+    expect(registryWithReserved.bySlug.has("admin")).toBe(false);
+    expect(registryWithReserved.bySlug.has("api")).toBe(false);
+
+    expect(resolveInvitationHostname("admin." + INVITATION_DOMAIN, registry)).toEqual({ kind: "missing" });
+    expect(resolveInvitationHostname("api." + INVITATION_DOMAIN, registry)).toEqual({ kind: "missing" });
   });
 });
 

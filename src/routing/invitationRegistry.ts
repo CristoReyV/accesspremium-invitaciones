@@ -10,6 +10,7 @@ export interface InvitationEntry {
 
 // Un segmento DNS válido, también usado para las categorías de ruta.
 const segment = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+export const RESERVED_REGISTRY_SLUGS = new Set(["panel", "admin", "api", "dashboard", "app", "auth", "static", "www"]);
 
 export function createInvitationRegistry(modules: Record<string, InvitationLoader>) {
   const entries: InvitationEntry[] = [];
@@ -18,6 +19,8 @@ export function createInvitationRegistry(modules: Record<string, InvitationLoade
     const match = /^\/src\/app\/([^/]+)\/([^/]+)\/page\.tsx$/.exec(file);
     if (!match || !segment.test(match[1]) || !segment.test(match[2])) continue;
     const [, category, slug] = match;
+    // Reservar expresamente panel y palabras de sistema: NUNCA registrar como invitación cliente
+    if (slug === "panel" || category === "panel" || RESERVED_REGISTRY_SLUGS.has(slug)) continue;
     const entry = { category, slug, path: `/${category}/${slug}`, load };
     entries.push(entry);
     bySlug.set(slug, [...(bySlug.get(slug) ?? []), entry]);
