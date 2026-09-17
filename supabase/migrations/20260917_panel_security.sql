@@ -1,7 +1,7 @@
 -- ============================================================
 -- Migration: Panel Security
--- Adds login rate limiting support and future controlled RSVP tokens.
--- Existing production tables are preserved.
+-- Adds login rate limiting support, safe incomplete-response handling,
+-- and future controlled RSVP tokens. Existing production rows are preserved.
 -- ============================================================
 
 -- Login attempt audit / rate limiting table.
@@ -24,6 +24,17 @@ GRANT ALL ON TABLE public.private_panel_login_attempts TO service_role;
 
 COMMENT ON TABLE public.private_panel_login_attempts IS
     'Panel login rate-limit audit. Stores only a keyed hash of the request IP, never the raw IP.';
+
+-- Allow an imported response to remain pending when Google Forms contains
+-- a value we cannot safely map. This preserves raw_data without counting it
+-- as confirmed/declined. Confirmed responses must contain at least 1 attendee.
+ALTER TABLE public.responses
+    DROP CONSTRAINT IF EXISTS responses_status_not_pending;
+ALTER TABLE public.responses
+    DROP CONSTRAINT IF EXISTS responses_confirmed_positive_attendees;
+ALTER TABLE public.responses
+    ADD CONSTRAINT responses_confirmed_positive_attendees
+    CHECK (status <> 'confirmed' OR attendee_count >= 1);
 
 -- Future controlled RSVP support.
 ALTER TABLE public.guests
