@@ -139,29 +139,40 @@ export function usePanelSync(token: string | null, onExpired: () => void) {
   const [error, setSyncError] = useState<string | null>(null);
   const [integration, setIntegration] = useState<SheetIntegration | null>(null);
 
-  useEffect(() => {
+  const refreshIntegration = useCallback(async (): Promise<void> => {
     if (!token) return;
-    api.getSheetIntegration(token).then((result) => {
-      if (result.ok) setIntegration(result.data);
-    });
-  }, [token]);
+    const result = await api.getSheetIntegration(token);
+    if (result.ok) {
+      setIntegration(result.data);
+      return;
+    }
+    if (result.code === "SESSION_EXPIRED") onExpired();
+  }, [token, onExpired]);
+
+  useEffect(() => {
+    void refreshIntegration();
+  }, [refreshIntegration]);
 
   const sync = useCallback(async (): Promise<void> => {
     if (!token || syncing) return;
     setSyncing(true);
     setSyncError(null);
     const result = await api.syncResponses(token);
-    setSyncing(false);
+
     if (result.ok) {
       setLastResult(result.data);
+      // The backend updates sheet_integrations.last_sync_at after every completed
+      // synchronization. Reload it so both Resumen and Integración reflect the
+      // new timestamp immediately without requiring a page refresh.
+      await refreshIntegration();
+    } else if (result.code === "SESSION_EXPIRED") {
+      onExpired();
     } else {
-      if (result.code === "SESSION_EXPIRED") {
-        onExpired();
-      } else {
-        setSyncError(result.error);
-      }
+      setSyncError(result.error);
     }
-  }, [token, syncing, onExpired]);
 
-  return { syncing, lastResult, error, integration, sync };
+    setSyncing(false);
+  }, [token, syncing, onExpired, refreshIntegration]);
+
+  return { syncing, lastResult, error, integration, sync, refreshIntegration };
 }
