@@ -330,7 +330,6 @@ export default function WeddingCafeEspresso() {
   const data = BODA_AYDE_OCTAVIO;
   const [isOpened, setIsOpened] = useState(false);
   const [showContent, setShowContent] = useState(false);
-  const hasForm = RSVP_FORM_URL !== "PENDIENTE_LINK_FORMS";
 
   useScrollReveal();
 
@@ -419,7 +418,7 @@ export default function WeddingCafeEspresso() {
           <figure className="relative z-10 w-full max-w-lg mx-auto mt-10 p-2"
             style={{ border: `1px solid ${C.gold}60`, backgroundColor: C.ivory, boxShadow: `0 16px 40px ${C.espresso}18` }}>
             <img src={ASSETS.photoHero} alt="Ayde y Octavio frente al mar, tomados de las manos"
-              width={3000} height={2000} fetchPriority="high" decoding="async"
+              width={3000} height={2000} loading="eager" decoding="async"
               className="w-full h-auto" style={{ aspectRatio: "3 / 2", objectFit: "cover", objectPosition: "52% 62%" }} />
           </figure>
 
@@ -748,6 +747,10 @@ export default function WeddingCafeEspresso() {
                 Favor de confirmar su asistencia y agregar los nombres de los asistentes.
               </p>
 
+              <p className="text-sm mb-6 leading-relaxed" style={{ color: C.cafe }}>
+                Indica si asistirán 1 o 2 personas. Ten a la mano tu nombre completo y los nombres de quienes te acompañarán; también puedes dedicar un mensaje a los novios.
+              </p>
+
               {/* Info chips */}
               <div className="space-y-2 mb-7">
                 <div className="flex items-center justify-center gap-2 py-2 px-4 mx-auto w-fit"
@@ -755,50 +758,40 @@ export default function WeddingCafeEspresso() {
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.gold} strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
                   </svg>
-                  <span className="text-[9px] tracking-[0.18em] uppercase" style={{ color: C.moka }}>Pase válido para 2 personas</span>
+                  <span className="text-xs leading-relaxed" style={{ color: C.moka }}>Pase válido para 2 personas</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 py-2 px-4 mx-auto w-fit"
                   style={{ backgroundColor: `${C.skyLight}35`, border: `1px solid ${C.sky}40` }}>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.sky} strokeWidth="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
                   </svg>
-                  <span className="text-[9px] tracking-[0.18em] uppercase" style={{ color: C.cafeClaro }}>Confirmar antes de octubre 2026</span>
+                  <span className="text-xs leading-relaxed" style={{ color: C.cafe }}>Fecha límite para confirmar: octubre de 2026</span>
                 </div>
               </div>
 
               {/* CTA principal */}
-              <a href={hasForm ? RSVP_FORM_URL : "#confirmar"}
-                target={hasForm ? "_blank" : "_self"} rel="noopener noreferrer"
-                className={`cafe-cta-glow w-full flex items-center justify-center gap-3 px-8 py-4 font-medium text-[10px] tracking-[0.18em] uppercase transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] mb-4 ${hasForm ? "" : "cursor-default"}`}
+              <a href={RSVP_FORM_URL}
+                target="_blank" rel="noopener noreferrer"
+                className="cafe-cta-glow w-full flex items-center justify-center gap-3 px-6 py-4 font-medium text-xs tracking-[0.12em] uppercase transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] mb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
                 style={{ background: `linear-gradient(135deg, ${C.espresso}, ${C.moka})`, color: C.ivory, borderRadius: "1px" }}
-                onClick={!hasForm ? (e) => e.preventDefault() : undefined}>
+                aria-describedby="rsvp-destination">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 Confirmar asistencia
               </a>
 
-              {/* Separador contacto alterno */}
-              <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px" style={{ backgroundColor: `${C.latte}22` }} />
-                <span className="text-[8px] tracking-[0.2em] uppercase" style={{ color: C.textLight }}>contacto alterno</span>
-                <div className="flex-1 h-px" style={{ backgroundColor: `${C.latte}22` }} />
-              </div>
-
-              {/* WhatsApp alterno */}
-              <a href={`https://wa.me/${data.rsvpWhatsapp}?text=Hola%2C%20quisiera%20comunicarme%20sobre%20la%20boda%20de%20Ayde%20y%20Octavio.`}
-                target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[9px] tracking-wider uppercase transition-all duration-300 hover:opacity-60"
-                style={{ color: C.textMuted }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-                Contactar por WhatsApp
-              </a>
-
-              <p className="text-[8px] text-center mt-4 px-2 leading-relaxed" style={{ color: C.textLight, fontStyle: "italic" }}>
-                En caso de no poder asistir, favor de avisar con un mes de anticipación.
+              <p id="rsvp-destination" className="text-xs leading-relaxed" style={{ color: C.textMuted }}>
+                La confirmación se realiza únicamente en Google Forms. El formulario se abrirá en una nueva pestaña.
               </p>
+              <div className="mt-6 pt-5" style={{ borderTop: `1px solid ${C.gold}35` }}>
+                <p className="text-sm leading-relaxed" style={{ color: C.cafe }}>
+                  En caso de no poder asistir, favor de avisar con un mes de anticipación.
+                </p>
+                <p className="text-xs mt-3 leading-relaxed" style={{ color: C.textMuted }}>
+                  Números de contacto de los novios: por confirmar.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -851,11 +844,11 @@ export default function WeddingCafeEspresso() {
 
         {/* Botón flotante RSVP */}
         <div className="fixed bottom-6 right-4 z-40" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-          <a href={hasForm ? RSVP_FORM_URL : "#confirmar"}
-            target={hasForm ? "_blank" : "_self"} rel="noopener noreferrer"
+          <a href={RSVP_FORM_URL}
+            target="_blank" rel="noopener noreferrer"
             className="flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 cafe-cta-glow"
             style={{ background: C.espresso, color: C.goldLight, border: `1.5px solid ${C.gold}80`, borderRadius: "50%" }}
-            aria-label="Confirmar asistencia">
+            aria-label="Confirmar asistencia en Google Forms (nueva pestaña)">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
