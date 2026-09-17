@@ -1,71 +1,40 @@
-﻿-- ============================================================
--- Migration: Panel Security — Login Rate Limiting
--- Creates private schema + panel_login_attempts table
--- Adds guest_access_token_hash and guest_access_hint to guests
+-- ============================================================
+-- Migration: Panel Security
+-- Adds login rate limiting support and future controlled RSVP tokens.
+-- Existing production tables are preserved.
 -- ============================================================
 
--- Create private schema if not exists
-CREATE SCHEMA IF NOT EXISTS private;
-
--- Rate limiting table for login attempts
--- Stores only IP hash, never the raw IP
-CREATE TABLE IF NOT EXISTS private_panel_login_attempts (
-    id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    ip_hash     TEXT NOT NULL,
-    success     BOOLEAN NOT NULL DEFAULT false,
+-- Login attempt audit / rate limiting table.
+-- Kept in public schema for Supabase REST access from service_role,
+-- but fully blocked from anon/authenticated by grants + RLS.
+CREATE TABLE IF NOT EXISTS public.private_panel_login_attempts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ip_hash TEXT NOT NULL,
+    success BOOLEAN NOT NULL DEFAULT false,
     attempted_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Index for fast rate-limit lookups
-CREATE INDEX IF NOT EXISTS idx_pla_ip_hash_attempted
-    ON private_panel_login_attempts (ip_hash, attempted_at)
+CREATE INDEX IF NOT EXISTS idx_private_panel_login_attempts_failed
+    ON public.private_panel_login_attempts (ip_hash, attempted_at DESC)
     WHERE success = false;
 
--- Auto-cleanup: delete records older than 24 hours (via cron or pg_cron)
--- Alternatively done in-query for simplicity in edge functions.
+ALTER TABLE public.private_panel_login_attempts ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.private_panel_login_attempts FROM anon, authenticated;
+GRANT ALL ON TABLE public.private_panel_login_attempts TO service_role;
 
--- ---- Guest token preparation (controlled mode / future native RSVP) ----
+COMMENT ON TABLE public.private_panel_login_attempts IS
+    'Panel login rate-limit audit. Stores only a keyed hash of the request IP, never the raw IP.';
 
--- Add guest token columns if not already present
-ALTER TABLE guests
+-- Future controlled RSVP support.
+ALTER TABLE public.guests
     ADD COLUMN IF NOT EXISTS guest_access_token_hash TEXT,
     ADD COLUMN IF NOT EXISTS guest_access_hint TEXT;
 
--- Add column for tracking source of confirmation
-ALTER TABLE guests
-    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+CREATE UNIQUE INDEX IF NOT EXISTS guests_event_guest_access_token_unique
+    ON public.guests (event_id, guest_access_token_hash)
+    WHERE guest_access_token_hash IS NOT NULL;
 
--- Add credentials_configured field to sheet_integrations if not present
-ALTER TABLE sheet_integrations
-    ADD COLUMN IF NOT EXISTS credentials_configured BOOLEAN DEFAULT false;
-
--- ---- Comments ----
-COMMENT ON TABLE private_panel_login_attempts IS
-    'Rate limiting table for panel login. Stores hashed IPs only.';
-
-COMMENT ON COLUMN guests.guest_access_token_hash IS
-    'SHA-256 hash of the guest individual token for native RSVP. Never store plaintext.';
-
-COMMENT ON COLUMN guests.guest_access_hint IS
-    'Short non-secret hint shown to identify the token (e.g., last 4 chars). Optional.';
-
--- ============================================================
--- RLS: private_panel_login_attempts
--- Only service_role can access this table.
--- anon and authenticated have no access.
--- ============================================================
-
-ALTER TABLE private_panel_login_attempts ENABLE ROW LEVEL SECURITY;
-
--- Service role bypasses RLS by default. Explicitly deny anon/authenticated:
-CREATE POLICY "deny_anon_login_attempts"
-    ON private_panel_login_attempts
-    FOR ALL
-    TO anon
-    USING (false);
-
-CREATE POLICY "deny_auth_login_attempts"
-    ON private_panel_login_attempts
-    FOR ALL
-    TO authenticated
-    USING (false);
+COMMENT ON COLUMN public.guests.guest_access_token_hash IS
+    'SHA-256 hash of a future per-guest RSVP token. Plaintext tokens are never stored.';
+COMMENT ON COLUMN public.guests.guest_access_hint IS
+    'Optional non-secret token hint for support/identification.';
