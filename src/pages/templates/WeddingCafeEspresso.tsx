@@ -34,20 +34,17 @@ import receptionImg     from "@/assets/invitations/cafe-espresso/itinerary-recep
 import watercolorImg    from "@/assets/invitations/cafe-espresso/watercolor-floral.png";
 import sobreCitlaliImg  from "@/assets/invitations/cafe-espresso/sobre-citlali.png";
 import musicFile        from "@/assets/invitations/cafe-espresso/hasta-mi-final.mp3";
-import photoPareja      from "@/assets/invitations/cafe-espresso/photo-pareja-boda.jpg";
-import photoIglesia     from "@/assets/invitations/cafe-espresso/photo-pareja-iglesia.jpg";
-import photoAbrazo      from "@/assets/invitations/cafe-espresso/photo-pareja-abrazo.jpg";
-import photoAnillos     from "@/assets/invitations/cafe-espresso/photo-anillos-rosas.jpg";
-import photoManos       from "@/assets/invitations/cafe-espresso/photo-manos-ramo.jpg";
-import photoAnilloDedo  from "@/assets/invitations/cafe-espresso/photo-anillo-dedo.jpg";
-import photoAnilloDedo2 from "@/assets/invitations/cafe-espresso/photo-anillo-dedo-2.jpg";
+import photoHero from "@/assets/invitations/cafe-espresso/fotos/HORIZONTAL PRINCIPAL.webp";
+import photoPortrait from "@/assets/invitations/cafe-espresso/fotos/VERTICAL PRINCIPAL.webp";
+import photoEmbrace from "@/assets/invitations/cafe-espresso/fotos/HORIZONTAL (1).webp";
+import photoBeach from "@/assets/invitations/cafe-espresso/fotos/HORIZONTAL (3).webp";
+import photoClosing from "@/assets/invitations/cafe-espresso/fotos/HORIZONTAL (5).webp";
 
 const ASSETS = {
   paper: paperImg, floral: floralImg, floralDerecha: floralDerechaImg, seal: sealImg, relief: reliefImg,
   itineraryRings: ringsImg, itineraryReception: receptionImg,
   watercolor: watercolorImg, sobreCitlali: sobreCitlaliImg, music: musicFile,
-  photoPareja, photoIglesia, photoAbrazo, photoAnillos,
-  photoManos, photoAnilloDedo, photoAnilloDedo2,
+  photoHero, photoPortrait, photoEmbrace, photoBeach, photoClosing,
 };
 
 // ─── Hook Scroll Reveal ───────────────────────────────────────
@@ -419,6 +416,13 @@ export default function WeddingCafeEspresso() {
             </div>
           </div>
 
+          <figure className="relative z-10 w-full max-w-lg mx-auto mt-10 p-2"
+            style={{ border: `1px solid ${C.gold}60`, backgroundColor: C.ivory, boxShadow: `0 16px 40px ${C.espresso}18` }}>
+            <img src={ASSETS.photoHero} alt="Ayde y Octavio frente al mar, tomados de las manos"
+              width={3000} height={2000} fetchPriority="high" decoding="async"
+              className="w-full h-auto" style={{ aspectRatio: "3 / 2", objectFit: "cover", objectPosition: "52% 62%" }} />
+          </figure>
+
           {/* Scroll indicator */}
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1" style={{ opacity: 0.35 }}>
             <div className="w-px h-5" style={{ backgroundColor: C.latte }} />
@@ -519,7 +523,7 @@ export default function WeddingCafeEspresso() {
         {/* ══════════════════════════════════════════════════════════
             4. MOMENTOS — Composición editorial de revista
         ══════════════════════════════════════════════════════════ */}
-        <section className="py-16 px-5 cafe-reveal"
+        <section className="relative py-16 px-5 cafe-reveal"
           style={{ backgroundImage: `url(${ASSETS.paper})`, backgroundSize: "cover", backgroundPosition: "center" }}>
           <div className="absolute inset-0" style={{ background: "rgba(251,247,241,0.3)", pointerEvents: "none" }} />
           <div className="max-w-xl mx-auto relative z-10">
@@ -532,43 +536,26 @@ export default function WeddingCafeEspresso() {
               <div className="w-12 h-px mx-auto mt-1" style={{ background: `linear-gradient(to right, transparent, ${C.gold}, transparent)` }} />
             </div>
 
-            {/* Foto protagonista */}
-            <div className="relative overflow-hidden mb-3 cafe-card-hover"
-              style={{ borderRadius: "2px", border: `1px solid ${C.gold}45`, boxShadow: `0 30px 90px ${C.espresso}25, 0 0 0 1px ${C.champagne}30` }}>
-              <div className="absolute inset-0 pointer-events-none z-10"
-                style={{ background: `linear-gradient(to bottom, rgba(44,26,14,0.02) 0%, transparent 25%, rgba(44,26,14,0.45) 100%)` }} />
-              <img src={ASSETS.photoPareja} alt="Ayde y Octavio"
-                className="w-full cafe-img-reveal"
-                style={{ height: "min(460px, 65vw)", objectFit: "cover", objectPosition: "center top" }} />
-              {/* Firma flotante */}
-              <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-12 z-20"
-                style={{ background: `linear-gradient(to top, ${C.espresso}82 0%, transparent 100%)` }}>
-                <p className="text-white text-lg italic text-center" style={{ fontFamily: "'Cormorant Garamond', serif", textShadow: "0 2px 10px rgba(0,0,0,0.7)" }}>
-                  "Un amor para siempre"
+            {/* Díptico editorial: retrato principal y una escena de apoyo. */}
+            <div className="grid grid-cols-[1.15fr_0.85fr] items-start gap-3 sm:gap-5">
+              <figure className="overflow-hidden p-1.5 cafe-card-hover"
+                style={{ border: `1px solid ${C.gold}45`, backgroundColor: C.ivory, boxShadow: `0 18px 48px ${C.espresso}18` }}>
+                <img src={ASSETS.photoPortrait} alt="Ayde y Octavio entre palmeras"
+                  width={2000} height={3000} loading="lazy" decoding="async"
+                  className="w-full h-auto" style={{ aspectRatio: "2 / 3", objectFit: "cover", objectPosition: "50% 68%" }} />
+              </figure>
+              <div className="pt-10 sm:pt-16">
+                <figure className="overflow-hidden p-1.5 cafe-card-hover"
+                  style={{ border: `1px solid ${C.gold}45`, backgroundColor: C.ivory }}>
+                  <img src={ASSETS.photoEmbrace} alt="Ayde y Octavio abrazados en el mirador"
+                    width={3000} height={2000} loading="lazy" decoding="async"
+                    className="w-full" style={{ aspectRatio: "4 / 5", objectFit: "cover", objectPosition: "46% 60%" }} />
+                </figure>
+                <p className="text-lg sm:text-2xl italic text-center mt-5 leading-snug"
+                  style={{ fontFamily: "'Cormorant Garamond', serif", color: C.cafe }}>
+                  Un amor para siempre
                 </p>
-                <div className="flex items-center justify-center gap-2 mt-1">
-                  <div className="w-4 h-px" style={{ backgroundColor: C.goldLight }} />
-                  <span className="text-[8px] tracking-[0.3em] uppercase" style={{ color: C.goldLight }}>Ayde &amp; Octavio · 2027</span>
-                  <div className="w-4 h-px" style={{ backgroundColor: C.goldLight }} />
-                </div>
-              </div>
-            </div>
-
-            {/* Fila de dos secundarias */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="relative overflow-hidden cafe-card-hover"
-                style={{ borderRadius: "2px", border: `1px solid ${C.gold}35`, boxShadow: `0 10px 28px ${C.espresso}10` }}>
-                <div className="absolute inset-0 z-10 pointer-events-none" style={{ background: `linear-gradient(135deg, ${C.champagne}08, transparent 50%)` }} />
-                <img src={ASSETS.photoAbrazo} alt="Ayde y Octavio"
-                  className="w-full cafe-img-reveal"
-                  style={{ height: "min(200px, 46vw)", objectFit: "cover", objectPosition: "center top" }} />
-              </div>
-              <div className="relative overflow-hidden cafe-card-hover"
-                style={{ borderRadius: "2px", border: `1px solid ${C.gold}35`, boxShadow: `0 10px 28px ${C.espresso}10` }}>
-                <div className="absolute inset-0 z-10 pointer-events-none" style={{ background: `linear-gradient(225deg, ${C.champagne}08, transparent 50%)` }} />
-                <img src={ASSETS.photoAnillos} alt="Anillos"
-                  className="w-full cafe-img-reveal"
-                  style={{ height: "min(200px, 46vw)", objectFit: "cover", objectPosition: "center" }} />
+                <GoldDivider slim />
               </div>
             </div>
           </div>
@@ -645,14 +632,15 @@ export default function WeddingCafeEspresso() {
         {/* ══════════════════════════════════════════════════════════
             7. FOTO EDITORIAL PAREJA
         ══════════════════════════════════════════════════════════ */}
-        <section className="px-5 pb-4 cafe-reveal"
+        <section className="relative px-5 pb-4 cafe-reveal"
           style={{ backgroundImage: `url(${ASSETS.paper})`, backgroundSize: "cover", backgroundPosition: "center" }}>
           <div style={{ position: "absolute", inset: 0, background: "rgba(251,247,241,0.25)", pointerEvents: "none" }} />
           <div className="max-w-lg mx-auto relative z-10">
             <div className="relative overflow-hidden cafe-card-hover"
               style={{ borderRadius: "2px", border: `1px solid ${C.gold}42`, boxShadow: `0 22px 65px ${C.espresso}18` }}>
-              <img src={ASSETS.photoIglesia} alt="Ayde y Octavio" className="w-full cafe-img-reveal"
-                style={{ height: "min(400px, 60vw)", objectFit: "cover", objectPosition: "center top" }} />
+              <img src={ASSETS.photoBeach} alt="Ayde y Octavio sonriendo junto a las olas"
+                width={3000} height={2000} loading="lazy" decoding="async" className="w-full h-auto cafe-img-reveal"
+                style={{ aspectRatio: "3 / 2", objectFit: "cover", objectPosition: "55% 55%" }} />
               <div className="absolute inset-0 flex items-end"
                 style={{ background: "linear-gradient(to top, rgba(44,26,14,0.72) 0%, rgba(44,26,14,0.1) 50%, transparent 100%)" }}>
                 <div className="p-5 w-full text-center">
@@ -830,6 +818,12 @@ export default function WeddingCafeEspresso() {
           {/* Watercolor overlay */}
           <div className="absolute inset-0 cafe-watercolor-shimmer pointer-events-none"
             style={{ backgroundImage: `url(${ASSETS.watercolor})`, backgroundSize: "cover", mixBlendMode: "soft-light" }} />
+
+          <figure className="relative z-10 max-w-lg mx-auto mb-10 p-2" style={{ border: `1px solid ${C.gold}60` }}>
+            <img src={ASSETS.photoClosing} alt="Ayde y Octavio abrazados, mirando juntos hacia el mar"
+              width={3000} height={2000} loading="lazy" decoding="async" className="w-full h-auto"
+              style={{ aspectRatio: "3 / 2", objectFit: "cover", objectPosition: "35% 60%" }} />
+          </figure>
 
           <div className="relative z-10 max-w-sm mx-auto">
             <GoldDivider dark slim />
