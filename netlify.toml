@@ -1,22 +1,19 @@
-﻿# ============================================================
-# Netlify Configuration — AccessPremium Invitaciones
+# ============================================================
+# Netlify Configuration
+# AccessPremium Invitaciones
 # ============================================================
 
 [build]
   command = "npm run build"
   publish = "dist"
 
-# SPA fallback — todas las rutas no-asset sirven index.html
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# ============================================================
-# Edge Functions
-# ============================================================
-
-# Social meta injection — must run before SPA fallback
+# Social meta injection edge function
 [[edge_functions]]
   function = "invitation-social-meta"
   path = "/*"
