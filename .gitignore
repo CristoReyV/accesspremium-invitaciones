@@ -40,3 +40,7 @@ analysis/screenshots/
 .env.local
 .env.*.local
 !.env.example
+
+# Netlify
+.netlify/
+

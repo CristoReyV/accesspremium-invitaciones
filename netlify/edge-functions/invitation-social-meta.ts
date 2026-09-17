@@ -1,4 +1,12 @@
-import type { Config, Context } from "@netlify/edge-functions";
+export interface Context {
+  next: () => Promise<Response>;
+  [key: string]: unknown;
+}
+
+export interface Config {
+  path?: string | string[];
+  onError?: "continue" | "fail" | "fallback";
+}
 
 export interface SocialMetadata {
   title: string;
