@@ -2,10 +2,26 @@
 // ACCESSPREMIUM — Utilidades de formato para el panel
 // ============================================================
 
+function parseDateValue(value: string): Date | null {
+  // PostgreSQL DATE values arrive as YYYY-MM-DD. `new Date("YYYY-MM-DD")`
+  // interprets them as UTC, which can shift the calendar date backwards in
+  // Mexico and other negative-offset time zones. Build date-only values in the
+  // local calendar instead so an event on Jan 30 always renders as Jan 30.
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (dateOnly) {
+    const [, year, month, day] = dateOnly;
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export function formatDate(iso: string | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
   if (!iso) return "—";
-  const date = new Date(iso);
-  if (isNaN(date.getTime())) return "—";
+  const date = parseDateValue(iso);
+  if (!date) return "—";
   return date.toLocaleDateString("es-MX", {
     year: "numeric",
     month: "short",
@@ -16,8 +32,8 @@ export function formatDate(iso: string | null | undefined, opts?: Intl.DateTimeF
 
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return "—";
-  const date = new Date(iso);
-  if (isNaN(date.getTime())) return "—";
+  const date = parseDateValue(iso);
+  if (!date) return "—";
   return date.toLocaleDateString("es-MX", {
     day: "numeric",
     month: "short",
@@ -29,8 +45,8 @@ export function formatDateTime(iso: string | null | undefined): string {
 
 export function formatRelative(iso: string | null | undefined): string {
   if (!iso) return "—";
-  const date = new Date(iso);
-  if (isNaN(date.getTime())) return "—";
+  const date = parseDateValue(iso);
+  if (!date) return "—";
   const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "justo ahora";
