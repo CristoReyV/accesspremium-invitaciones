@@ -98,9 +98,7 @@ export default function PanelDashboardPage({ session, onLogout, onSessionExpired
     }
   }, [createGuest, updateGuest, refreshGuests]);
 
-  const lastSyncResult = lastResult
-    ? `${lastResult.imported_count} nueva${lastResult.imported_count !== 1 ? "s" : ""} respuesta${lastResult.imported_count !== 1 ? "s" : ""} importada${lastResult.imported_count !== 1 ? "s" : ""}.`
-    : null;
+  const lastSyncResult = lastResult?.message ?? null;
 
   const controlMode = event?.control_mode ?? "semi_open";
 
