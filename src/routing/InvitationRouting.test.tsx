@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import InvitationRouting from "./InvitationRouting";
 
 vi.mock("@/pages/templates/WeddingCafeEspresso", () => ({ default: () => <h1>Invitación Ayde y Octavio</h1> }));
+vi.mock("@/pages/templates/WeddingCreamSkyblue", () => ({ default: () => <h1>Invitación Ayde y Octavio</h1> }));
 
 afterEach(cleanup);
 
