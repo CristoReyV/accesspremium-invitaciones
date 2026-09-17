@@ -44,3 +44,6 @@ analysis/screenshots/
 # Netlify
 .netlify/
 
+
+.temp-edge-bundle/
+

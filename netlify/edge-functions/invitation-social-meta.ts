@@ -5,7 +5,6 @@ export interface Context {
 
 export interface Config {
   path?: string | string[];
-  onError?: "continue" | "fail" | "fallback";
 }
 
 export interface SocialMetadata {
@@ -121,5 +120,4 @@ export default async function handler(request: Request, context: Context): Promi
 
 export const config: Config = {
   path: "/*",
-  onError: "continue",
 };
