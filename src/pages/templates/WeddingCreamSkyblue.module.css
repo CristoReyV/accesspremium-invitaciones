@@ -48,7 +48,7 @@
 .parents > div + div { border-left: 1px solid #bacbd2; }
 .parents h3 { font-size: 22px; line-height: 1.6; padding-top: 14px; }
 .parents h3 span { display: block; }
-.memorialCross { display: inline; color: #8a795b; font-size: .65em; vertical-align: .12em; margin-right: .2em; }
+.memorialCross { display: inline-block; width: 20px; height: 30px; object-fit: contain; vertical-align: -.3em; margin-right: .15em; pointer-events: none; user-select: none; }
 .openingFlowersLower { position: absolute; width: clamp(175px,27vw,350px); bottom: -35px; left: -35px; opacity: .75; }
 .gifts { padding: 60px 32px 90px; background: radial-gradient(ellipse at 20% 50%,#e5eef3aa,transparent 60%),#f8f9f4; }
 .giftCard { max-width: 1050px; margin: auto; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(25px,5vw,75px); text-align: center; }
