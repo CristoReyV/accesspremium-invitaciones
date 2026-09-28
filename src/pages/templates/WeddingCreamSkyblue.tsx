@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUpRight, Church, FileText, Heart, Music2, Pause } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Church, FileText, Heart, Mail, Music2, Pause } from "lucide-react";
 import InvitationLayout from "@/components/invitations/layout/InvitationLayout";
 import CountdownTimer from "@/components/invitations/CountdownTimer";
 import { AYDE_OCTAVIO_CREAM_SKYBLUE as data } from "@/data/aydeOctavioCreamSkyblue";
@@ -72,6 +72,7 @@ export default function WeddingCreamSkyblue() {
       {!opened ? (
         <section className={styles.opening} aria-label="Abrir invitación de Ayde y Octavio">
           <img src={floral} alt="" className={styles.openingFlowers} />
+          <img src={floral} alt="" className={styles.openingFlowersLower} />
           <p className={styles.eyebrow}>Una invitación para ti</p>
           <div className={styles.envelope}>
             <Monogram />
@@ -113,7 +114,7 @@ export default function WeddingCreamSkyblue() {
             <p>{data.customMessage}</p>
             <Divider />
             <div className={styles.parents}>
-              <div><p className={styles.eyebrow}>Padre de la novia</p><h3>{data.parents?.[0]?.name}</h3></div>
+              <div><p className={styles.eyebrow}>Padres de la novia</p><h3><span>{data.parents?.[0]?.name}</span><span><small className={styles.memorialCross} aria-label="En memoria de">✝</small> {data.brideMother}</span></h3></div>
               <div><p className={styles.eyebrow}>Padres del novio</p><h3>{data.parents?.[1]?.name.split(" · ").map(name => <span key={name}>{name}</span>)}</h3></div>
             </div>
           </section>
@@ -128,7 +129,7 @@ export default function WeddingCreamSkyblue() {
           <section className={styles.countdown} data-reveal>
             <p className={styles.eyebrow}>Cada vez más cerca</p>
             <h2>Nos vemos en el altar</h2>
-            <CountdownTimer targetDate={data.eventDate} accentColor="#304B5A" labelColor="#526976" />
+            <CountdownTimer targetDate={data.eventDate} accentColor={creamSkyblueTheme.colors.text} labelColor={creamSkyblueTheme.colors.textMuted} />
             <p className={styles.countdownDate}>30 de enero de 2027 · 7:00 pm</p>
           </section>
 
@@ -164,13 +165,25 @@ export default function WeddingCreamSkyblue() {
             <figcaption>El mejor lugar siempre será a tu lado.</figcaption>
           </figure>
 
+          <section className={styles.gifts} data-reveal aria-labelledby="regalos-titulo">
+            <div className={styles.giftCard}>
+              <span className={styles.sectionNumber}>IV / CON CARIÑO</span>
+              <div className={styles.giftIcon} aria-hidden="true"><Mail size={32} strokeWidth={1} /></div>
+              <h2 id="regalos-titulo">Lluvia de sobres</h2>
+              <p className={styles.giftIntroduction}>{data.gifts.introduction}</p>
+              <Divider />
+              <p>{data.gifts.description}</p>
+              <p className={styles.giftThanks}>{data.gifts.thanks}</p>
+            </div>
+          </section>
+
           <section id="confirmacion" className={styles.rsvp} data-reveal aria-labelledby="confirmacion-titulo">
             <img src={floral} alt="" className={styles.rsvpFlowers} />
             <div className={styles.rsvpCard}>
-              <span className={styles.sectionNumber}>IV / TE ESPERAMOS</span>
+              <span className={styles.sectionNumber}>V / TE ESPERAMOS</span>
               <h2 id="confirmacion-titulo">Nos haría muy felices<br /><em>contar contigo.</em></h2>
               <p className={styles.pass}>Pase válido para 2 personas</p>
-              <p>Favor de confirmar su asistencia y agregar los nombres de los asistentes.</p>
+              <p>{data.confirmationMessage}</p>
               <p className={styles.rsvpDetails}>Indica si asistirán 1 o 2 personas y comparte un mensaje para los novios.</p>
               <a className={styles.primaryButton} href={data.rsvpUrl} target="_blank" rel="noopener noreferrer" aria-describedby="forms-nota">Confirmar asistencia <ArrowUpRight size={16} /></a>
               <p id="forms-nota" className={styles.formsNote}>Google Forms · Se abre en una nueva pestaña</p>
