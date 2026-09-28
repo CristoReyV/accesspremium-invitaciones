@@ -15,6 +15,7 @@ import floralSide from "@/assets/invitations/cafe-espresso/ayde-octavio-premium-
 import floralFrame from "@/assets/invitations/cafe-espresso/ayde-octavio-premium-assets/floral-frame-gold.webp";
 import floralDivider from "@/assets/invitations/cafe-espresso/ayde-octavio-premium-assets/floral-divider.webp";
 import music from "@/assets/invitations/cafe-espresso/hasta-mi-final.mp3";
+import memorialCross from "@/assets/invitations/cafe-espresso/ayde-octavio-premium-assets/memorial-cross-champagne.png";
 import styles from "./WeddingCreamSkyblue.module.css";
 
 function Monogram() {
@@ -133,7 +134,7 @@ export default function WeddingCreamSkyblue() {
             <p>{data.customMessage}</p>
             <Divider />
             <div className={styles.parents}>
-              <div><p className={styles.eyebrow}>Padres de la novia</p><h3><span>{data.parents?.[0]?.name}</span><span><small className={styles.memorialCross} aria-label="En memoria de">✝</small> {data.brideMother}</span></h3></div>
+              <div><p className={styles.eyebrow}>Padres de la novia</p><h3><span>{data.parents?.[0]?.name}</span><span><img src={memorialCross} className={styles.memorialCross} alt="En memoria de" width={20} height={30} loading="lazy" decoding="async" draggable={false} /> {data.brideMother}</span></h3></div>
               <div><p className={styles.eyebrow}>Padres del novio</p><h3>{data.parents?.[1]?.name.split(" · ").map(name => <span key={name}>{name}</span>)}</h3></div>
             </div>
           </section>
