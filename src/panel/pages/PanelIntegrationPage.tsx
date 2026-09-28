@@ -28,7 +28,7 @@ export default function PanelIntegrationPage({
         Integración Google Sheets
       </h2>
       <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 24 }}>
-        Sincroniza automáticamente las respuestas de tu Google Forms.
+        Sincroniza las respuestas de tu Google Forms con tu panel.
       </p>
 
       {/* Status card */}
@@ -56,7 +56,7 @@ export default function PanelIntegrationPage({
               ⚠ Google Sheets pendiente de conexión
             </div>
             <div style={{ fontSize: 13, color: "#78350F", lineHeight: 1.6 }}>
-              Para activar la sincronización automática, solicita a AccessPremium que configure
+              Para activar la sincronización, solicita a AccessPremium que configure
               las credenciales de la cuenta de servicio de Google.
               <br /><br />
               <strong>Pasos requeridos por el administrador:</strong>

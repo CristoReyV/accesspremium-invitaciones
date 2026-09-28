@@ -2,7 +2,7 @@
 // ACCESSPREMIUM — Dashboard / Resumen del Panel
 // ============================================================
 
-import { formatDateTime, formatRelative, statusColor, statusLabel } from "../utils/formatters";
+import { formatDate, formatRelative, statusLabel } from "../utils/formatters";
 import type { DashboardSummary, EventResponse, PanelEvent } from "../types";
 
 interface RecentResponseProps {
@@ -72,7 +72,7 @@ export default function PanelSummaryPage({
         </h1>
         {event?.event_date && (
           <p style={{ fontSize: 14, color: "#6b7280" }}>
-            {formatDateTime(event.event_date)}
+            {formatDate(event.event_date)}
           </p>
         )}
       </div>

@@ -7,6 +7,16 @@
   command = "npm run build"
   publish = "dist"
 
+# Baseline browser security headers. These are intentionally conservative
+# so they protect the panel without breaking invitation media/integrations.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+
 # SPA fallback
 [[redirects]]
   from = "/*"
