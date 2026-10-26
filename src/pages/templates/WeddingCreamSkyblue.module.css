@@ -1,5 +1,9 @@
+/* Clip horizontal artwork without creating nested vertical scroll containers.
+   Applied to document ancestors only while this invitation is mounted. */
+.scrollRoot, :global(#root).scrollRoot { overflow-x: clip; overflow-y: visible; scroll-behavior: auto; }
 .page {
   --sky: #dceaf1; --ink: #3f5550; --muted: #596d65; --ivory: #fdfcf8; --champagne: #b6a17a;
+  overflow-x: clip; overflow-y: visible;
   background: var(--ivory); color: var(--ink); font-family: 'Inter', sans-serif;
 }
 .page h1, .page h2, .page h3, .page figure, .page p { margin: 0; }
@@ -16,7 +20,7 @@
 .divider > span { height: 1px; width: 46px; background: #c9bca4; }
 .primaryButton { display: inline-flex; min-height: 52px; align-items: center; justify-content: center; gap: 20px; padding: 16px 28px; background: #dceef7; color: #3f5550; border: 1px solid #a9bdba; text-decoration: none; font-size: 12px; letter-spacing: .055em; transition: background .2s, transform .2s; }
 .primaryButton:hover { background: #cbe3ef; transform: translateY(-2px); }
-.opening { position: relative; min-height: 100svh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 30px; overflow: hidden; padding: 48px 22px; background: radial-gradient(ellipse at top left,#dceaf1,transparent 70%),#f6f3eb; }
+.opening { position: relative; min-height: 100vh; min-height: 100svh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 30px; overflow: clip; padding: 48px 22px; background: radial-gradient(ellipse at top left,#dceaf1,transparent 70%),#f6f3eb; }
 .openingFlowers { position: absolute; width: clamp(190px,30vw,410px); top: -40px; right: -35px; opacity: .85; }
 .envelope { z-index: 1; position: relative; text-align: center; width: min(480px,100%); padding: 55px 20px; background: #fffdf8; border: 1px solid #d5c9b5; box-shadow: 10px 12px 0 #e2ebee, 0 25px 60px #3f555012; outline: 1px solid #d5c9b5; outline-offset: -10px; }
 .envelope .monogram { font-size: 40px; padding: 12px; border: 1px solid #d5c9b5; width: 100px; height: 100px; justify-content: center; border-radius: 50%; margin-bottom: 32px; }
@@ -63,14 +67,14 @@
 .portrait { grid-column: 1; grid-row: 1 / 3; }
 .portrait img { width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 46% 46% 0 0; border: 8px solid #f7f8f1; outline: 1px solid #d6ccba; outline-offset: 5px; }
 .story figcaption { font-family: 'Playfair Display', serif; font-style: italic; font-size: 13px; line-height: 1.7; color: var(--muted); margin-top: 18px; }
-.bouquet { grid-column: 2; grid-row: 2 / 4; padding: 8px 8px 16px; background: #edf3eb; transform: rotate(2deg); }
+.bouquet { --reveal-rest: rotate(2deg); grid-column: 2; grid-row: 2 / 4; padding: 8px 8px 16px; background: #edf3eb; transform: rotate(2deg); }
 .bouquet img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 64%; }
 .bouquet figcaption { text-align: center; }
 .page .storyQuote { grid-column: 1; grid-row: 3; align-self: center; text-align: center; font-family: 'Alex Brush', cursive; font-size: 38px; line-height: 1.1; color: #7796a7; }
 .countdown { text-align: center; padding: 60px 20px; background: #e9f4fa; border-block: 1px solid #d6e1e5; }
 .countdown h2 { margin: 12px 0 36px; font-size: clamp(28px,3vw,38px); }
 .page .countdownDate { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; margin-top: 28px; }
-.program { max-width: 1140px; padding: 100px 88px 100px 48px; margin: auto; display: grid; grid-template-columns: .85fr 1.15fr; gap: 70px; align-items: center; position: relative; isolation: isolate; }
+.program { max-width: 1140px; padding: 100px 88px 100px 48px; margin: auto; display: grid; grid-template-columns: .65fr 1.35fr; gap: 70px; align-items: center; position: relative; isolation: isolate; }
 .programHeading h2 { margin: 20px 0; }
 .programHeading > p { font-size: 13px; line-height: 1.8; color: var(--muted); }
 .programSheet { background: #fffefa; border: 1px solid #d5c9b5; padding: 32px 30px 12px; position: relative; box-shadow: 10px 10px 0 #e7eff2; }
@@ -81,18 +85,16 @@
 .ceremonies { list-style: none; padding: 0; margin: 0; }
 .ceremonies li { display: flex; gap: 18px; position: relative; padding: 32px 0; }
 .ceremonies li + li { border-top: 1px solid #e1d9c9; }
-.ceremonyIcon { color: #809dac; padding-top: 8px; }
-.ceremonyBody { position: relative; z-index: 1; flex: 1; }
+.ceremonyBody { min-width: 0; position: relative; z-index: 1; flex: 1; }
 .ceremonyBody time { font-size: 12px; letter-spacing: .12em; color: #596d65; }
-.ceremonyBody h3 { font-size: 28px; padding: 8px 0; }
+.ceremonyBody h3 { font-size: clamp(23px,2.3vw,28px); line-height: 1.3; padding: 8px 0; }
 .ceremonyBody p { font-size: 14px; line-height: 1.6; max-width: 250px; }
 .venueCity { display: block; font-size: 10px; color: var(--muted); line-height: 1.8; margin-top: 8px; }
 .ceremonyBody a { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; color: #456258; font-size: 11px; text-underline-offset: 4px; margin-top: 7px; }
-.ceremonyNumber { position: absolute; right: 0; top: 22px; font-family: 'Playfair Display', serif; font-size: 55px; color: #dce6ea; }
 .page .beach { max-width: 920px; margin: 0 auto 90px; padding: 0 28px; }
 .beach img { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
 .beach figcaption { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; padding: 22px 0; text-align: center; border-bottom: 1px solid #d5c9b5; }
-.rsvp { background: linear-gradient(135deg,#e1f0f8,#f0f6f0); padding: 90px 24px; position: relative; overflow: hidden; }
+.rsvp { background: linear-gradient(135deg,#e1f0f8,#f0f6f0); padding: 90px 24px; position: relative; overflow: clip; }
 .rsvpFlowers { position: absolute; width: clamp(180px,28vw,360px); left: -70px; bottom: -75px; opacity: .75; }
 .rsvpCard { position: relative; max-width: 600px; margin: auto; background: #fffdf8; border: 1px solid #c7b99e; outline: 1px solid #ded5c4; outline-offset: -10px; padding: 55px 52px 45px; text-align: center; box-shadow: 0 20px 55px #3f55500d; }
 .rsvpCard h2 { font-size: clamp(28px,3.3vw,40px); margin: 20px 0 28px; }
@@ -118,27 +120,28 @@
 .floatingRsvp:hover { transform: scale(1.08); background: #d3e7f1; }
 .musicError { position: fixed; bottom: 70px; left: 20px; max-width: 250px; background: var(--ivory); font-size: 12px; z-index: 10; }
 .musicError:empty { display: none; }
-.waiting { opacity: 0; transform: translateY(12px); transition: opacity .8s ease, transform .8s ease; }
-.waiting.visible { opacity: 1; transform: translateY(0); }
+/* No will-change or retained transform after the one-shot reveal. */
+.revealPending { opacity: 0; transform: translate3d(0,14px,0) var(--reveal-rest,rotate(0deg)); transition: opacity 650ms ease-out, transform 650ms ease-out; }
+.revealPending.revealVisible { opacity: 1; transform: var(--reveal-rest,none); }
+.bottomFade { position: fixed; inset: auto 0 0; height: 64px; z-index: 5; background: linear-gradient(to bottom,rgba(253,252,248,0),rgba(253,252,248,.2) 65%,rgba(253,252,248,.55)); pointer-events: none; user-select: none; }
 
 /* Decoración local: sin interacción ni exposición a lectores de pantalla. */
 .floralArt { display: block; height: auto; object-fit: contain; pointer-events: none; user-select: none; }
-.heroText { position: relative; z-index: 1; animation: stationeryReveal .9s ease both; }
+.heroText { position: relative; z-index: 1; }
 .heroFlowersTop { position: absolute; width: clamp(175px,20vw,245px); top: -45px; right: -38px; z-index: 0; }
 .heroFlowersBottom { position: absolute; width: clamp(140px,16vw,195px); bottom: -34px; left: -30px; z-index: 0; }
 .floralTransition { display: flex; justify-content: center; padding: 34px 24px; }
 .floralDivider { width: clamp(200px,28vw,310px); max-width: 100%; }
-.programFlowers { position: absolute; width: 260px; right: -65px; top: 135px; z-index: -1; opacity: .85; }
+.programFlowers { position: absolute; width: 260px; right: 0; top: 135px; z-index: -1; opacity: .85; }
 .programHeading { position: relative; }
 .ceremonies { position: relative; }
-.ceremonies::before { content: ''; position: absolute; left: 14px; top: 42px; bottom: 80px; width: 1px; background: #cdbd9c; }
-.ceremonyIcon { position: relative; z-index: 1; background: #fffefa; align-self: flex-start; padding-block: 8px; }
+.ceremonies::before { content: ''; position: absolute; left: 17px; top: 48px; bottom: 48px; pointer-events: none; width: 1px; background: #cdbd9c; }
 .giftStationery { position: relative; width: 100%; max-width: 460px; aspect-ratio: 1122 / 1402; margin: auto; }
 .giftFrame { position: absolute; inset: 0; width: 100%; height: 100%; }
 .giftHeading { position: absolute; left: 25%; right: 25%; top: 33%; bottom: 28%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
 .giftHeading .sectionNumber { font-size: 9px; letter-spacing: .16em; }
 .giftMessage { max-width: 450px; margin: auto; }
-@keyframes stationeryReveal { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: none; } }
+
 
 @media(max-width: 760px) {
   .programFlowers { display: none; }
@@ -147,7 +150,7 @@
   .giftHeading .sectionNumber { font-size: 8px; }
   .giftIcon { margin: 12px auto; }
   .heroImage { margin-top: 0 !important; }
-  .ceremonies::before { left: 11px; }
+  .ceremonies::before { left: 17px; }
   .gifts { padding: 42px 24px 60px; }
   .giftCard { grid-template-columns: 1fr; gap: 18px; }
   .giftCard .giftIntroduction { font-size: 24px; }
@@ -181,7 +184,7 @@
   .storyHeading h2 { font-size: 34px; }
   .portrait { grid-row: 2 / 4; grid-column: 1; }
   .portrait img { border-width: 4px; outline-offset: 3px; }
-  .bouquet { grid-column: 2; grid-row: 3 / 5; padding: 5px 5px 10px; }
+  .bouquet { --reveal-rest: rotate(2deg); grid-column: 2; grid-row: 3 / 5; padding: 5px 5px 10px; }
   .bouquet img { aspect-ratio: 2 / 3; }
   .story figcaption { font-size: 10px; margin-top: 12px; }
   .page .storyQuote { grid-row: 4; font-size: 25px; line-height: 1.3; }
@@ -197,8 +200,6 @@
   .ceremonies li { gap: 14px; padding: 30px 0; }
   .ceremonyBody h3 { font-size: 26px; }
   .ceremonyBody p { font-size: 13px; }
-  .ceremonyNumber { font-size: 44px; opacity: .7; }
-  .ceremonyIcon svg { width: 24px; }
   .page .beach { padding: 0 24px; margin-bottom: 60px; }
   .beach img { aspect-ratio: 1; object-position: 58% 62%; }
   .beach figcaption { font-size: 15px; line-height: 1.7; }
@@ -211,7 +212,19 @@
   .closing h2 { font-size: 36px; }
 }
 @media(prefers-reduced-motion: reduce) {
-  .waiting, .waiting.visible { opacity: 1; transform: none; transition: none; }
+  .revealPending, .revealPending.revealVisible { opacity: 1; transform: var(--reveal-rest,none); transition: none; }
   .primaryButton, .floatingRsvp { transition: none; }
-  .heroText { animation: none; }
+}
+
+.page .heroVerse { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(14px,1.3vw,16px); line-height: 1.65; white-space: pre-line; max-width: 29ch; margin: 0 auto 28px; color: var(--muted); }
+.ceremonyNode { position: relative; z-index: 1; flex: 0 0 35px; height: 35px; display: grid; place-items: center; border: 1px solid #cdbd9c; border-radius: 50%; background: #fffefa; color: #756344; font-size: 11px; letter-spacing: .04em; }
+.hero > *, .story > *, .program > *, .giftCard > *, .closing > * { min-width: 0; }
+.musicError { pointer-events: none; }
+@media (min-width: 761px) and (max-width: 1000px) {
+  .hero { padding-inline: 40px; gap: 28px; }
+  .heroCopy { padding-inline: 20px; }
+  .heroCopy h1 { font-size: 54px; }
+  .program { grid-template-columns: 1fr; padding: 72px 56px; gap: 32px; }
+  .programHeading { text-align: center; }
+  .programSheet { width: 100%; max-width: 620px; margin: auto; }
 }

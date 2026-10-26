@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUpRight, Church, FileText, Heart, Mail, Music2, Pause } from "lucide-react";
+import { ArrowDown, ArrowUpRight, FileText, Mail, Music2, Pause } from "lucide-react";
 import InvitationLayout from "@/components/invitations/layout/InvitationLayout";
 import CountdownTimer from "@/components/invitations/CountdownTimer";
 import { AYDE_OCTAVIO_CREAM_SKYBLUE as data } from "@/data/aydeOctavioCreamSkyblue";
@@ -47,27 +47,46 @@ export default function WeddingCreamSkyblue() {
   const page = useRef<HTMLDivElement>(null);
   const [musicError, setMusicError] = useState("");
 
+  // Scope the document scroll correction to this invitation, restoring it on exit.
+  useEffect(() => {
+    const roots = [document.documentElement, document.body, document.getElementById("root")];
+    roots.forEach(root => root?.classList.add(styles.scrollRoot));
+    return () => roots.forEach(root => root?.classList.remove(styles.scrollRoot));
+  }, []);
+
   useEffect(() => { introButton.current?.focus(); }, []);
   useEffect(() => {
     if (!opened) return;
     hero.current?.focus({ preventScroll: true });
-    if (!window.IntersectionObserver || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!window.IntersectionObserver || motion.matches) return;
+    // Observe small content blocks, never the full-width section backgrounds.
+    const elements = Array.from(page.current?.querySelectorAll("[data-reveal]") ?? []);
+    const pending = new Set(elements);
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add(styles.visible);
-          observer.unobserve(entry.target);
-        }
+        if (!entry.isIntersecting || !pending.has(entry.target)) return;
+        entry.target.classList.add(styles.revealVisible);
+        pending.delete(entry.target);
+        observer.unobserve(entry.target);
       });
-    }, { threshold: 0.08 });
-    const elements = page.current?.querySelectorAll("[data-reveal]") ?? [];
+      if (!pending.size) observer.disconnect();
+    }, { threshold: 0, rootMargin: "0px 0px 32px 0px" });
     elements.forEach(element => {
-      element.classList.add(styles.waiting);
+      element.classList.add(styles.revealPending);
       observer.observe(element);
     });
+    const showImmediately = () => {
+      if (!motion.matches) return;
+      observer.disconnect();
+      pending.clear();
+      elements.forEach(element => element.classList.remove(styles.revealPending, styles.revealVisible));
+    };
+    motion.addEventListener("change", showImmediately);
     return () => {
       observer.disconnect();
-      elements.forEach(element => element.classList.remove(styles.waiting));
+      motion.removeEventListener("change", showImmediately);
+      elements.forEach(element => element.classList.remove(styles.revealPending, styles.revealVisible));
     };
   }, [opened]);
 
@@ -111,8 +130,8 @@ export default function WeddingCreamSkyblue() {
             <div className={styles.heroCopy}>
               <FloralArt src={floralTop} className={styles.heroFlowersTop} width={1254} height={1254} eager />
               <FloralArt src={floralBottom} className={styles.heroFlowersBottom} width={1254} height={1254} eager />
-              <div className={styles.heroText}>
-              <p className={styles.eyebrow}>Con todo nuestro amor · Nuestra boda</p>
+              <div className={styles.heroText} data-reveal>
+              <p className={styles.heroVerse}>{data.heroVerse}</p>
               <h1 ref={hero} tabIndex={-1}>Ayde <span>&</span> Octavio</h1>
               <p className={styles.heroPhrase}>Un amor para siempre</p>
               <Divider />
@@ -128,12 +147,12 @@ export default function WeddingCreamSkyblue() {
             </figure>
           </section>
 
-          <section id="bienvenida" className={styles.letter} data-reveal>
+          <section id="bienvenida" className={styles.letter}>
             <span className={styles.sectionNumber}>I / LA INVITACIÓN</span>
             <h2>La alegría de compartir<br /><em>este día contigo.</em></h2>
             <p>{data.customMessage}</p>
             <Divider />
-            <div className={styles.parents}>
+            <div className={styles.parents} data-reveal>
               <div><p className={styles.eyebrow}>Padres de la novia</p><h3><span>{data.parents?.[0]?.name}</span><span><img src={memorialCross} className={styles.memorialCross} alt="En memoria de" width={20} height={30} loading="lazy" decoding="async" draggable={false} /> {data.brideMother}</span></h3></div>
               <div><p className={styles.eyebrow}>Padres del novio</p><h3>{data.parents?.[1]?.name.split(" · ").map(name => <span key={name}>{name}</span>)}</h3></div>
             </div>
@@ -141,41 +160,40 @@ export default function WeddingCreamSkyblue() {
 
           <FloralDivider />
 
-          <section className={styles.story} aria-labelledby="historia-titulo" data-reveal>
+          <section className={styles.story} aria-labelledby="historia-titulo">
             <div className={styles.storyHeading}><span className={styles.sectionNumber}>II / NUESTRA HISTORIA</span><h2 id="historia-titulo">Contigo,<br /><em>todo es más bonito.</em></h2></div>
-            <figure className={styles.portrait}><img src={portraitPhoto} alt="Ayde y Octavio entre palmeras" width={2000} height={3000} loading="lazy" decoding="async" /><figcaption>Una vida. Mil momentos. Tú y yo.</figcaption></figure>
-            <figure className={styles.bouquet}><img src={bouquetPhoto} alt="Ayde y Octavio compartiendo un beso detrás de un ramo blanco" width={2000} height={3000} loading="lazy" decoding="async" /><figcaption>Lo nuestro, para siempre.</figcaption></figure>
+            <figure className={styles.portrait} data-reveal><img src={portraitPhoto} alt="Ayde y Octavio entre palmeras" width={2000} height={3000} loading="lazy" decoding="async" /><figcaption>Una vida. Mil momentos. Tú y yo.</figcaption></figure>
+            <figure className={styles.bouquet} data-reveal><img src={bouquetPhoto} alt="Ayde y Octavio compartiendo un beso detrás de un ramo blanco" width={2000} height={3000} loading="lazy" decoding="async" /><figcaption>Lo nuestro, para siempre.</figcaption></figure>
             <p className={styles.storyQuote}>“Un amor<br />para siempre”</p>
           </section>
 
-          <section className={styles.countdown} data-reveal>
+          <section className={styles.countdown}>
             <p className={styles.eyebrow}>Cada vez más cerca</p>
             <h2>Nos vemos en el altar</h2>
             <CountdownTimer targetDate={data.eventDate} accentColor={creamSkyblueTheme.colors.text} labelColor={creamSkyblueTheme.colors.textMuted} />
             <p className={styles.countdownDate}>30 de enero de 2027 · 7:00 pm</p>
           </section>
 
-          <section className={styles.program} aria-labelledby="programa-titulo" data-reveal>
+          <section className={styles.program} aria-labelledby="programa-titulo">
             <FloralArt src={floralSide} className={styles.programFlowers} width={1086} height={1448} />
-            <div className={styles.programHeading}>
+            <div className={styles.programHeading} data-reveal>
               <span className={styles.sectionNumber}>III / EL GRAN DÍA</span>
               <h2 id="programa-titulo">Nuestro <em>sí, acepto.</em></h2>
-              <p>Dos momentos, una misma historia.</p>
+              <p>Cinco momentos, una misma historia.</p>
             </div>
-            <div className={styles.programSheet}>
-              <div className={styles.programTop}><Monogram /><span>Programa de ceremonia<br /><strong>Sábado · 30 de enero de 2027</strong></span></div>
+            <div className={styles.programSheet} data-reveal>
+              <div className={styles.programTop}><Monogram /><span>Programa de nuestra boda<br /><strong>Sábado · 30 de enero de 2027</strong></span></div>
               <ol className={styles.ceremonies}>
                 {data.ceremonies.map(ceremony => (
                   <li key={ceremony.id}>
-                    <div className={styles.ceremonyIcon} aria-hidden="true">{ceremony.id === "misa" ? <Church strokeWidth={1} size={30} /> : <Heart strokeWidth={1} size={30} />}</div>
+                    <span className={styles.ceremonyNode} aria-hidden="true">{ceremony.number}</span>
                     <div className={styles.ceremonyBody}>
                       <time dateTime={ceremony.dateTime}>{ceremony.time}</time>
                       <h3>{ceremony.title}</h3>
-                      <p>{ceremony.venue}</p>
-                      <span className={styles.venueCity}>Chilpancingo de los Bravo, Guerrero</span>
-                      <a href={ceremony.mapsUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ver ubicación de ${ceremony.venue} en Google Maps (nueva pestaña)`}>Ver ubicación <ArrowUpRight size={14} /></a>
+                      {ceremony.venue && <p>{ceremony.venue}</p>}
+                      {ceremony.venue && <span className={styles.venueCity}>Chilpancingo de los Bravo, Guerrero</span>}
+                      {ceremony.mapsUrl && <a href={ceremony.mapsUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ver ubicación de ${ceremony.venue} en Google Maps (nueva pestaña)`}>Ver ubicación <ArrowUpRight size={14} /></a>}
                     </div>
-                    <span className={styles.ceremonyNumber} aria-hidden="true">{ceremony.number}</span>
                   </li>
                 ))}
               </ol>
@@ -183,13 +201,13 @@ export default function WeddingCreamSkyblue() {
             </div>
           </section>
 
-          <figure className={styles.beach} data-reveal>
+          <figure className={styles.beach}>
             <img src={beachPhoto} alt="Ayde y Octavio sonriendo juntos en la playa" width={3000} height={2000} loading="lazy" decoding="async" />
             <figcaption>El mejor lugar siempre será a tu lado.</figcaption>
           </figure>
 
-          <section className={styles.gifts} data-reveal aria-labelledby="regalos-titulo">
-            <div className={styles.giftCard}>
+          <section className={styles.gifts} aria-labelledby="regalos-titulo">
+            <div className={styles.giftCard} data-reveal>
               <div className={styles.giftStationery}>
                 <FloralArt src={floralFrame} className={styles.giftFrame} width={1122} height={1402} />
                 <div className={styles.giftHeading}>
@@ -207,9 +225,9 @@ export default function WeddingCreamSkyblue() {
             </div>
           </section>
 
-          <section id="confirmacion" className={styles.rsvp} data-reveal aria-labelledby="confirmacion-titulo">
+          <section id="confirmacion" className={styles.rsvp} aria-labelledby="confirmacion-titulo">
             <FloralArt src={floralBottom} className={styles.rsvpFlowers} width={1254} height={1254} />
-            <div className={styles.rsvpCard}>
+            <div className={styles.rsvpCard} data-reveal>
               <span className={styles.sectionNumber}>V / TE ESPERAMOS</span>
               <h2 id="confirmacion-titulo">Nos haría muy felices<br /><em>contar contigo.</em></h2>
               <p className={styles.pass}>Pase válido para 2 personas</p>
@@ -223,12 +241,13 @@ export default function WeddingCreamSkyblue() {
           </section>
 
           <FloralDivider />
-          <footer className={styles.closing} data-reveal>
-            <figure><img src={closingPhoto} alt="Ayde y Octavio abrazados mirando al horizonte" width={3000} height={2000} loading="lazy" decoding="async" /></figure>
-            <div><Monogram /><p className={styles.eyebrow}>Con todo nuestro amor</p><h2>Ayde <i>&</i> Octavio</h2><p className={styles.closingPhrase}>Un amor para siempre</p><Divider /><p>30 · ENERO · 2027</p><span>Chilpancingo de los Bravo, Guerrero</span></div>
+          <footer className={styles.closing}>
+            <figure data-reveal><img src={closingPhoto} alt="Ayde y Octavio abrazados mirando al horizonte" width={3000} height={2000} loading="lazy" decoding="async" /></figure>
+            <div data-reveal><Monogram /><p className={styles.eyebrow}>Con todo nuestro amor</p><h2>Ayde <i>&</i> Octavio</h2><p className={styles.closingPhrase}>Un amor para siempre</p><Divider /><p>30 · ENERO · 2027</p><span>Chilpancingo de los Bravo, Guerrero</span></div>
           </footer>
           <button className={styles.musicButton} onClick={() => playing ? audio.current?.pause() : void playMusic()} aria-label={playing ? "Pausar música" : "Reproducir música"} aria-pressed={playing}>{playing ? <Pause size={18} /> : <Music2 size={18} />}</button>
           <a href={data.rsvpUrl} target="_blank" rel="noopener noreferrer" className={styles.floatingRsvp} aria-label="Confirmar asistencia en Google Forms (nueva pestaña)"><FileText size={18} /></a>
+          <div className={styles.bottomFade} aria-hidden="true" />
           <p className={styles.musicError} role="status">{musicError}</p>
         </div>
       )}
