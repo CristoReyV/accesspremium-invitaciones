@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUpRight, Church, FileText, Heart, Mail, Music2, Pause } from "lucide-react";
+import { ArrowDown, ArrowUpRight, FileText, Mail, Music2, Pause } from "lucide-react";
 import InvitationLayout from "@/components/invitations/layout/InvitationLayout";
 import CountdownTimer from "@/components/invitations/CountdownTimer";
 import { AYDE_OCTAVIO_CREAM_SKYBLUE as data } from "@/data/aydeOctavioCreamSkyblue";
@@ -47,11 +47,18 @@ export default function WeddingCreamSkyblue() {
   const page = useRef<HTMLDivElement>(null);
   const [musicError, setMusicError] = useState("");
 
+  // Scope the document scroll correction to this invitation, restoring it on exit.
+  useEffect(() => {
+    const roots = [document.documentElement, document.body, document.getElementById("root")];
+    roots.forEach(root => root?.classList.add(styles.scrollRoot));
+    return () => roots.forEach(root => root?.classList.remove(styles.scrollRoot));
+  }, []);
+
   useEffect(() => { introButton.current?.focus(); }, []);
   useEffect(() => {
     if (!opened) return;
     hero.current?.focus({ preventScroll: true });
-    if (!window.IntersectionObserver || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!window.IntersectionObserver || window.matchMedia("(prefers-reduced-motion: reduce), (max-width: 900px), (pointer: coarse)").matches) return;
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -112,7 +119,7 @@ export default function WeddingCreamSkyblue() {
               <FloralArt src={floralTop} className={styles.heroFlowersTop} width={1254} height={1254} eager />
               <FloralArt src={floralBottom} className={styles.heroFlowersBottom} width={1254} height={1254} eager />
               <div className={styles.heroText}>
-              <p className={styles.eyebrow}>Con todo nuestro amor · Nuestra boda</p>
+              <p className={styles.heroVerse}>{data.heroVerse}</p>
               <h1 ref={hero} tabIndex={-1}>Ayde <span>&</span> Octavio</h1>
               <p className={styles.heroPhrase}>Un amor para siempre</p>
               <Divider />
@@ -160,22 +167,21 @@ export default function WeddingCreamSkyblue() {
             <div className={styles.programHeading}>
               <span className={styles.sectionNumber}>III / EL GRAN DÍA</span>
               <h2 id="programa-titulo">Nuestro <em>sí, acepto.</em></h2>
-              <p>Dos momentos, una misma historia.</p>
+              <p>Cinco momentos, una misma historia.</p>
             </div>
             <div className={styles.programSheet}>
-              <div className={styles.programTop}><Monogram /><span>Programa de ceremonia<br /><strong>Sábado · 30 de enero de 2027</strong></span></div>
+              <div className={styles.programTop}><Monogram /><span>Programa de nuestra boda<br /><strong>Sábado · 30 de enero de 2027</strong></span></div>
               <ol className={styles.ceremonies}>
                 {data.ceremonies.map(ceremony => (
                   <li key={ceremony.id}>
-                    <div className={styles.ceremonyIcon} aria-hidden="true">{ceremony.id === "misa" ? <Church strokeWidth={1} size={30} /> : <Heart strokeWidth={1} size={30} />}</div>
+                    <span className={styles.ceremonyNode} aria-hidden="true">{ceremony.number}</span>
                     <div className={styles.ceremonyBody}>
                       <time dateTime={ceremony.dateTime}>{ceremony.time}</time>
                       <h3>{ceremony.title}</h3>
-                      <p>{ceremony.venue}</p>
-                      <span className={styles.venueCity}>Chilpancingo de los Bravo, Guerrero</span>
-                      <a href={ceremony.mapsUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ver ubicación de ${ceremony.venue} en Google Maps (nueva pestaña)`}>Ver ubicación <ArrowUpRight size={14} /></a>
+                      {ceremony.venue && <p>{ceremony.venue}</p>}
+                      {ceremony.venue && <span className={styles.venueCity}>Chilpancingo de los Bravo, Guerrero</span>}
+                      {ceremony.mapsUrl && <a href={ceremony.mapsUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ver ubicación de ${ceremony.venue} en Google Maps (nueva pestaña)`}>Ver ubicación <ArrowUpRight size={14} /></a>}
                     </div>
-                    <span className={styles.ceremonyNumber} aria-hidden="true">{ceremony.number}</span>
                   </li>
                 ))}
               </ol>
