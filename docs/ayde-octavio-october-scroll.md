@@ -73,3 +73,23 @@ Variable opcional `PREVIEW_URL`; por defecto http://127.0.0.1:8082.
 Limitación: prueba en navegador de escritorio con emulación, no en Safari/iOS
 físico. El incidente original no se reprodujo de manera concluyente antes del
 cambio. Conviene confirmar en el dispositivo donde se reportó antes de publicar.
+
+## Mejora posterior: reveal ligero y fade inferior
+
+La versión siguiente sustituye la desactivación móvil anterior por un observer
+local de una sola aparición, sobre diez bloques de contenido (no fondos de
+secciones completas). Opacidad y translate de 14 px, 650 ms ease-out, sin blur,
+scroll listeners, bucles por frame, will-change ni dependencias. Cada bloque
+se desobserva al entrar; el observer se desconecta al terminar. Reduced-motion
+muestra todo inmediatamente, incluso al cambiar la preferencia durante la visita.
+Se conserva la inclinación estática de la fotografía del ramo.
+
+Fade inferior: 64 px, gradient marfil hasta alpha .55, pointer-events:none,
+user-select:none, aria-hidden; z-index 5, debajo de controles (10). No usa
+filter ni backdrop-filter. La corrección de scroll nativo permanece intacta.
+
+El comprobador ahora espera la carga del hero, deja estabilizar la inercia antes
+de medir una reversa y posiciona la rueda en una sección intermedia, evitando
+falsos fallos al final del documento tras capturar un timeline alto. Incluye
+un gesto iniciado dentro del fade, verificación de opacidad final y preferencia
+de movimiento reducido. Es compatible con el preview mediante PREVIEW_URL.
